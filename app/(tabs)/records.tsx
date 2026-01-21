@@ -1,4 +1,7 @@
+import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
 import { getOrCreateCurrentSeason, getOrCreateDefaultProfile } from '@/src/db/database';
 import { getMilestones, getStreaks } from '@/src/db/queries';
 import { useFocusEffect } from '@react-navigation/native';
@@ -11,6 +14,8 @@ import {
 } from 'react-native';
 
 export default function RecordsScreen() {
+  const colorScheme = useColorScheme();
+  const tintColor = Colors[colorScheme ?? 'light'].tint;
   const [isLoading, setIsLoading] = useState(true);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [streaks, setStreaks] = useState<any[]>([]);
@@ -93,7 +98,12 @@ export default function RecordsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Records & Milestones</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.headerText}>
+            <Text style={styles.headerTitle}>Records & Milestones</Text>
+          </View>
+          <HomeButton color={tintColor} />
+        </View>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -158,6 +168,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerText: {
+    flex: 1,
   },
   headerTitle: {
     fontSize: 24,

@@ -1,4 +1,7 @@
+import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
 import { SeasonPicker } from '@/src/components/SeasonPicker';
 import {
   getOrCreateCurrentSeason,
@@ -39,6 +42,8 @@ const StatDisplay: React.FC<StatDisplayProps> = ({
 );
 
 export default function SeasonStatsScreen() {
+  const colorScheme = useColorScheme();
+  const tintColor = Colors[colorScheme ?? 'light'].tint;
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [selectedSeason, setSelectedSeason] = useState<Season | null>(null);
@@ -88,10 +93,15 @@ export default function SeasonStatsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Season Stats</Text>
-        <Text style={styles.headerSubtitle}>
-          {stats.season_year} - {stats.team_name}
-        </Text>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.headerTitle}>Season Stats</Text>
+            <Text style={styles.headerSubtitle}>
+              {stats.season_year} - {stats.team_name}
+            </Text>
+          </View>
+          <HomeButton color={tintColor} />
+        </View>
       </View>
       {profile && (
         <SeasonPicker
@@ -297,6 +307,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   headerTitle: {
     fontSize: 24,

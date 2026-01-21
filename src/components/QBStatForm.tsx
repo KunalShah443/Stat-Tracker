@@ -1,15 +1,16 @@
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { GameFormData, QB_STATS, QBStatKey } from '@/src/types/stats';
-import React from 'react';
+import { showAlert } from '@/src/utils/alerts';
 import {
-    Alert,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-} from 'react-native';
+  GameFormData,
+  getPostseasonRoundLabel,
+  POSTSEASON_ROUNDS,
+  QB_STATS,
+  QBStatKey,
+} from '@/src/types/stats';
+import React, { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 
 interface QBStatFormProps {
   formData: GameFormData;
@@ -26,6 +27,7 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
 }) => {
   const colorScheme = useColorScheme();
   const isDarkMode = colorScheme === 'dark';
+  const [showPostseasonOptions, setShowPostseasonOptions] = useState(false);
 
   const updateBasicField = (field: keyof Omit<GameFormData, 'stats'>, value: any) => {
     onFormChange({
@@ -49,11 +51,17 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
 
   const handleSubmit = () => {
     if (!formData.opponent.trim()) {
-      Alert.alert('Error', 'Please enter opponent name');
+      showAlert('Error', 'Please enter opponent name');
       return;
     }
     onSubmit();
   };
+
+  const inputBackground = isDarkMode ? '#333' : '#f0f0f0';
+  const inputBorder = isDarkMode ? '#555' : '#ddd';
+  const inputText = isDarkMode ? '#fff' : '#000';
+  const placeholderText = isDarkMode ? '#999' : '#666';
+  const selectedPostseasonLabel = getPostseasonRoundLabel(formData.week ?? null);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -67,55 +75,96 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
             style={[
               styles.input,
               {
-                backgroundColor: isDarkMode ? '#333' : '#f0f0f0',
-                color: isDarkMode ? '#fff' : '#000',
-                borderColor: isDarkMode ? '#555' : '#ddd',
+                backgroundColor: inputBackground,
+                color: inputText,
+                borderColor: inputBorder,
               },
             ]}
             placeholder="Enter opponent"
-            placeholderTextColor={isDarkMode ? '#999' : '#666'}
+            placeholderTextColor={placeholderText}
             value={formData.opponent}
             onChangeText={(text) => updateBasicField('opponent', text)}
           />
         </View>
 
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Game Date</Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: isDarkMode ? '#333' : '#f0f0f0',
-                color: isDarkMode ? '#fff' : '#000',
-                borderColor: isDarkMode ? '#555' : '#ddd',
-              },
-            ]}
-            placeholder="YYYY-MM-DD"
-            value={formData.gameDate}
-            onChangeText={(text) => updateBasicField('gameDate', text)}
-          />
-        </View>
-
         <View style={styles.row}>
           <View style={[styles.formGroup, { flex: 1 }]}>
-            <Text style={styles.label}>Week (Optional)</Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: isDarkMode ? '#333' : '#f0f0f0',
-                  color: isDarkMode ? '#fff' : '#000',
-                  borderColor: isDarkMode ? '#555' : '#ddd',
-                },
-              ]}
-              placeholder="Week #"
-              placeholderTextColor={isDarkMode ? '#999' : '#666'}
-              keyboardType="numeric"
-              value={formData.week?.toString() || ''}
-              onChangeText={(text) =>
-                updateBasicField('week', text === '' ? undefined : parseInt(text))
-              }
-            />
+            <Text style={styles.label}>
+              {formData.isPostseason ? 'Postseason Round' : 'Week (Optional)'}
+            </Text>
+            {formData.isPostseason ? (
+              <>
+                <Pressable
+                  style={[
+                    styles.input,
+                    styles.dropdownInput,
+                    {
+                      backgroundColor: inputBackground,
+                      borderColor: inputBorder,
+                    },
+                  ]}
+                  onPress={() => setShowPostseasonOptions((prev) => !prev)}
+                >
+                  <Text
+                    style={[
+                      styles.dropdownText,
+                      { color: selectedPostseasonLabel ? inputText : placeholderText },
+                    ]}
+                  >
+                    {selectedPostseasonLabel || 'Select round'}
+                  </Text>
+                </Pressable>
+                {showPostseasonOptions && (
+                  <View style={[styles.dropdown, { borderColor: inputBorder }]}>
+                    {POSTSEASON_ROUNDS.map((round) => {
+                      const isSelected = formData.week === round.value;
+                      return (
+                        <Pressable
+                          key={round.value}
+                          style={[
+                            styles.dropdownOption,
+                            isSelected && {
+                              backgroundColor: Colors[colorScheme ?? 'light'].tint,
+                            },
+                          ]}
+                          onPress={() => {
+                            updateBasicField('week', round.value);
+                            setShowPostseasonOptions(false);
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.dropdownOptionText,
+                              isSelected && { color: '#fff' },
+                            ]}
+                          >
+                            {round.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                )}
+              </>
+            ) : (
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: inputBackground,
+                    color: inputText,
+                    borderColor: inputBorder,
+                  },
+                ]}
+                placeholder="Week #"
+                placeholderTextColor={placeholderText}
+                keyboardType="numeric"
+                value={formData.week?.toString() || ''}
+                onChangeText={(text) =>
+                  updateBasicField('week', text === '' ? undefined : parseInt(text))
+                }
+              />
+            )}
           </View>
 
           <View style={[styles.formGroup, { flex: 1, marginLeft: 10 }]}>
@@ -149,7 +198,15 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
         <View style={styles.formGroup}>
           <View style={styles.checkboxRow}>
             <Pressable
-              onPress={() => updateBasicField('isPostseason', !formData.isPostseason)}
+              onPress={() => {
+                const nextValue = !formData.isPostseason;
+                onFormChange({
+                  ...formData,
+                  isPostseason: nextValue,
+                  week: undefined,
+                });
+                setShowPostseasonOptions(false);
+              }}
               style={styles.checkbox}
             >
               <View
@@ -177,13 +234,13 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
               style={[
                 styles.input,
                 {
-                  backgroundColor: isDarkMode ? '#333' : '#f0f0f0',
-                  color: isDarkMode ? '#fff' : '#000',
-                  borderColor: isDarkMode ? '#555' : '#ddd',
+                  backgroundColor: inputBackground,
+                  color: inputText,
+                  borderColor: inputBorder,
                 },
               ]}
               placeholder="0"
-              placeholderTextColor={isDarkMode ? '#999' : '#666'}
+              placeholderTextColor={placeholderText}
               keyboardType="decimal-pad"
               value={formData.stats[key as QBStatKey].toString()}
               onChangeText={(text) => updateStat(key as QBStatKey, text)}
@@ -241,6 +298,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     fontSize: 14,
+  },
+  dropdownInput: {
+    justifyContent: 'center',
+  },
+  dropdownText: {
+    fontSize: 14,
+  },
+  dropdown: {
+    marginTop: 6,
+    borderWidth: 1,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  dropdownOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  dropdownOptionText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   row: {
     flexDirection: 'row',

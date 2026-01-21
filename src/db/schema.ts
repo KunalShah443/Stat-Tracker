@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 /**
  * Notes:
@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS profiles (
   sport TEXT NOT NULL,          -- "madden"
   position TEXT NOT NULL,       -- "QB" (later RB/WR/LB/EDGE/CB)
   player_name TEXT NOT NULL,
+  draft_round INTEGER,          -- e.g. 1
+  draft_pick INTEGER,           -- e.g. 12
+  team_name TEXT,               -- drafted/current team
   created_at TEXT NOT NULL
 );
 

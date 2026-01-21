@@ -1,4 +1,7 @@
+import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
 import {
   getGamesBySeason,
   getOrCreateDefaultProfile,
@@ -37,6 +40,8 @@ const StatDisplay: React.FC<StatDisplayProps> = ({
 );
 
 export default function CareerStatsScreen() {
+  const colorScheme = useColorScheme();
+  const tintColor = Colors[colorScheme ?? 'light'].tint;
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const [gameCount, setGameCount] = useState(0);
@@ -89,8 +94,13 @@ export default function CareerStatsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Career Stats</Text>
-        <Text style={styles.headerSubtitle}>{gameCount} games</Text>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.headerTitle}>Career Stats</Text>
+            <Text style={styles.headerSubtitle}>{gameCount} games</Text>
+          </View>
+          <HomeButton color={tintColor} />
+        </View>
       </View>
 
       <ScrollView
@@ -283,6 +293,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   headerTitle: {
     fontSize: 24,

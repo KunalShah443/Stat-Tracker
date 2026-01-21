@@ -9,6 +9,17 @@ export const QB_STATS = {
   rush_td: { label: 'Rush TDs', defaultValue: 0 },
 };
 
+export const POSTSEASON_ROUNDS = [
+  { value: 1, label: 'Wildcard' },
+  { value: 2, label: 'Divisional' },
+  { value: 3, label: 'AFC Championship' },
+  { value: 4, label: 'NFC Championship' },
+  { value: 5, label: 'Super Bowl' },
+] as const;
+
+export const getPostseasonRoundLabel = (value?: number | null): string | null =>
+  POSTSEASON_ROUNDS.find((round) => round.value === value)?.label ?? null;
+
 export type QBStatKey = keyof typeof QB_STATS;
 
 export interface GameFormData {

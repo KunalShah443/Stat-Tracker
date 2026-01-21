@@ -1,4 +1,7 @@
+import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
 import { SeasonPicker } from '@/src/components/SeasonPicker';
 import {
   getGameStats,
@@ -8,7 +11,9 @@ import {
   Profile,
   Season,
 } from '@/src/db/database';
+import { getPostseasonRoundLabel } from '@/src/types/stats';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -20,7 +25,6 @@ import {
 interface GameWithStats {
   id: string;
   opponent: string;
-  gameDate: string;
   week: number | null;
   isPostseason: number;
   result: string | null;
@@ -29,6 +33,9 @@ interface GameWithStats {
 }
 
 export default function GameLogsScreen() {
+  const colorScheme = useColorScheme();
+  const tintColor = Colors[colorScheme ?? 'light'].tint;
+  const router = useRouter();
   const [games, setGames] = useState<GameWithStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -87,7 +94,6 @@ export default function GameLogsScreen() {
           return {
             id: game.id,
             opponent: game.opponent,
-            gameDate: game.game_date,
             week: game.week,
             isPostseason: game.is_postseason,
             result: game.result,
@@ -105,53 +111,58 @@ export default function GameLogsScreen() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
+  const formatWeekLabel = (game: GameWithStats) => {
+    if (game.isPostseason === 1) {
+      return getPostseasonRoundLabel(game.week) || 'Postseason';
+    }
+    if (game.week) {
+      return `Week ${game.week}`;
+    }
+    return null;
   };
 
-  const renderGameItem = ({ item }: { item: GameWithStats }) => (
-    <Pressable style={styles.gameCard}>
-      <View
-        style={[
-          styles.resultBadge,
-          {
-            backgroundColor:
-              item.result === 'W'
-                ? '#4caf50'
-                : item.result === 'L'
-                ? '#f44336'
-                : '#ff9800',
-          },
-        ]}>
-        <Text style={styles.resultText}>{item.result || '—'}</Text>
-      </View>
+  const renderGameItem = ({ item }: { item: GameWithStats }) => {
+    const weekLabel = formatWeekLabel(item);
 
-      <View style={styles.gameInfo}>
-        <Text style={styles.opponent}>{item.opponent}</Text>
-        <Text style={styles.dateText}>
-          {formatDate(item.gameDate)}
-          {item.week && ` • Week ${item.week}`}
-          {item.isPostseason === 1 && ' • Postseason'}
-        </Text>
-      </View>
+    return (
+      <Pressable
+        style={styles.gameCard}
+        onPress={() => router.push(`/game-log/${item.id}`)}
+      >
+        <View
+          style={[
+            styles.resultBadge,
+            {
+              backgroundColor:
+                item.result === 'W'
+                  ? '#4caf50'
+                  : item.result === 'L'
+                  ? '#f44336'
+                  : '#ff9800',
+            },
+          ]}
+        >
+          <Text style={styles.resultText}>{item.result || '-'}</Text>
+        </View>
 
-      <View style={styles.stats}>
-        <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Pass Yds</Text>
-          <Text style={styles.statValue}>{item.passYds}</Text>
+        <View style={styles.gameInfo}>
+          <Text style={styles.opponent}>{item.opponent}</Text>
+          {weekLabel && <Text style={styles.dateText}>{weekLabel}</Text>}
         </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Pass TD</Text>
-          <Text style={styles.statValue}>{item.passTD}</Text>
+
+        <View style={styles.stats}>
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Pass Yds</Text>
+            <Text style={styles.statValue}>{item.passYds}</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Pass TD</Text>
+            <Text style={styles.statValue}>{item.passTD}</Text>
+          </View>
         </View>
-      </View>
-    </Pressable>
-  );
+      </Pressable>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -161,20 +172,16 @@ export default function GameLogsScreen() {
     );
   }
 
-  if (games.length === 0) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>No games recorded yet</Text>
-        <Text style={styles.emptySubtext}>Add a game to get started!</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Game Logs</Text>
-        <Text style={styles.headerSubtitle}>{games.length} games</Text>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.headerTitle}>Game Logs</Text>
+            <Text style={styles.headerSubtitle}>{games.length} games</Text>
+          </View>
+          <HomeButton color={tintColor} />
+        </View>
       </View>
       {profile && (
         <SeasonPicker
@@ -213,8 +220,16 @@ export default function GameLogsScreen() {
         data={games}
         renderItem={renderGameItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          games.length === 0 && styles.emptyListContent,
+        ]}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>No games logged</Text>
+          </View>
+        }
       />
     </View>
   );
@@ -234,6 +249,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   headerTitle: {
     fontSize: 24,
@@ -285,6 +305,13 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 15,
     gap: 10,
+  },
+  emptyListContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  emptyState: {
+    alignItems: 'center',
   },
   gameCard: {
     flexDirection: 'row',
@@ -339,10 +366,5 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    opacity: 0.6,
   },
 });

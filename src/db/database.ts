@@ -22,6 +22,9 @@ export interface Profile {
   sport: string;
   position: string;
   player_name: string;
+  draft_round: number | null;
+  draft_pick: number | null;
+  team_name: string | null;
   created_at: string;
 }
 
@@ -51,26 +54,84 @@ export interface GameStat {
   stat_value: number;
 }
 
+export const setActiveProfileId = async (
+  profileId: string | null
+): Promise<void> => {
+  const database = await getDatabase();
+  if (profileId === null) {
+    await database.runAsync('DELETE FROM meta WHERE key = ?', [
+      'active_profile_id',
+    ]);
+    return;
+  }
+
+  await database.runAsync(
+    'INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)',
+    ['active_profile_id', profileId]
+  );
+};
+
+export const getActiveProfileId = async (): Promise<string | null> => {
+  const database = await getDatabase();
+  const row = await database.getFirstAsync<{ value: string }>(
+    'SELECT value FROM meta WHERE key = ?',
+    ['active_profile_id']
+  );
+  return row?.value ?? null;
+};
+
+export const getActiveProfile = async (): Promise<Profile | null> => {
+  const activeId = await getActiveProfileId();
+  if (!activeId) return null;
+  return getProfile(activeId);
+};
+
+export const deleteProfile = async (profileId: string): Promise<void> => {
+  const database = await getDatabase();
+  const activeId = await getActiveProfileId();
+  await database.runAsync('DELETE FROM profiles WHERE id = ?', [profileId]);
+  if (activeId === profileId) {
+    await setActiveProfileId(null);
+  }
+};
+
 // Profile operations
 export const createProfile = async (
   sport: string,
   position: string,
-  playerName: string
+  playerName: string,
+  draftRound?: number | null,
+  draftPick?: number | null,
+  teamName?: string | null
 ): Promise<Profile> => {
   const database = await getDatabase();
   const id = `profile_${Date.now()}`;
   const now = new Date().toISOString();
 
   await database.runAsync(
-    'INSERT INTO profiles (id, sport, position, player_name, created_at) VALUES (?, ?, ?, ?, ?)',
-    [id, sport, position, playerName, now]
+    'INSERT INTO profiles (id, sport, position, player_name, draft_round, draft_pick, team_name, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [
+      id,
+      sport,
+      position,
+      playerName,
+      draftRound ?? null,
+      draftPick ?? null,
+      teamName ?? null,
+      now,
+    ]
   );
+
+  await setActiveProfileId(id);
 
   return {
     id,
     sport,
     position,
     player_name: playerName,
+    draft_round: draftRound ?? null,
+    draft_pick: draftPick ?? null,
+    team_name: teamName ?? null,
     created_at: now,
   };
 };
@@ -94,8 +155,14 @@ export const getAllProfiles = async (): Promise<Profile[]> => {
 };
 
 export const getOrCreateDefaultProfile = async (): Promise<Profile> => {
+  const activeProfile = await getActiveProfile();
+  if (activeProfile) return activeProfile;
+
   const profiles = await getAllProfiles();
-  if (profiles.length > 0) return profiles[0];
+  if (profiles.length > 0) {
+    await setActiveProfileId(profiles[0].id);
+    return profiles[0];
+  }
 
   return createProfile('madden', 'QB', 'You');
 };
@@ -180,7 +247,9 @@ export const getOrCreateCurrentSeason = async (
   if (currentSeason) return currentSeason;
 
   // Create a new season for current year
-  return createSeason(profileId, currentYear, 'TBD');
+  const profile = await getProfile(profileId);
+  const defaultTeam = profile?.team_name ?? 'TBD';
+  return createSeason(profileId, currentYear, defaultTeam);
 };
 
 // Game operations

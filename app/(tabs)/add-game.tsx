@@ -1,4 +1,7 @@
+import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
+import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
 import { QBStatForm } from '@/src/components/QBStatForm';
 import { SeasonPicker } from '@/src/components/SeasonPicker';
 import { useGame, useProfile, useSeason } from '@/src/hooks/useDatabase';
@@ -7,6 +10,8 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
 
 export default function AddGameScreen() {
+  const colorScheme = useColorScheme();
+  const tintColor = Colors[colorScheme ?? 'light'].tint;
   const [formData, setFormData] = useState<GameFormData>(DEFAULT_GAME_FORM_DATA);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -44,10 +49,12 @@ export default function AddGameScreen() {
     setIsLoading(true);
 
     try {
+      const gameDate = new Date().toISOString().split('T')[0];
+
       // Create the game
       const game = await createNewGame(
         currentSeason.id,
-        formData.gameDate,
+        gameDate,
         formData.opponent,
         formData.isPostseason,
         formData.week,
@@ -95,7 +102,10 @@ export default function AddGameScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>New Game</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.headerTitle}>New Game</Text>
+          <HomeButton color={tintColor} />
+        </View>
       </View>
       {profile && (
         <SeasonPicker
@@ -124,10 +134,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 4,
   },
   errorText: {
     fontSize: 16,

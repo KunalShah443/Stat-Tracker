@@ -53,8 +53,22 @@ export const useProfile = () => {
   }, []);
 
   const createNewProfile = useCallback(
-    async (sport: string, position: string, name: string) => {
-      const p = await createProfile(sport, position, name);
+    async (
+      sport: string,
+      position: string,
+      name: string,
+      draftRound?: number | null,
+      draftPick?: number | null,
+      teamName?: string | null
+    ) => {
+      const p = await createProfile(
+        sport,
+        position,
+        name,
+        draftRound,
+        draftPick,
+        teamName
+      );
       setProfile(p);
       setProfiles((prev) => [p, ...prev]);
       return p;
