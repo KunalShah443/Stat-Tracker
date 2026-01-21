@@ -49,7 +49,7 @@ const QB_STAT_KEYS = [
   'rush_td',
 ];
 
-export const aggregateStats = (gameIds: string[]): QBStats => {
+export const aggregateStats = async (gameIds: string[]): Promise<QBStats> => {
   if (gameIds.length === 0) {
     return {
       pass_cmp: { total: 0, average: 0, count: 0, games: 0 },
@@ -68,8 +68,11 @@ export const aggregateStats = (gameIds: string[]): QBStats => {
     statTotals[key] = [];
   });
 
-  gameIds.forEach((gameId) => {
-    const stats = getGameStats(gameId);
+  const statsByGame = await Promise.all(
+    gameIds.map((gameId) => getGameStats(gameId))
+  );
+
+  statsByGame.forEach((stats) => {
     stats.forEach((stat) => {
       if (QB_STAT_KEYS.includes(stat.stat_key)) {
         if (!statTotals[stat.stat_key]) {
@@ -100,48 +103,46 @@ export const aggregateStats = (gameIds: string[]): QBStats => {
   return result;
 };
 
-export const getSeasonStats = (seasonId: string): SeasonStats => {
-  const season = getSeason(seasonId);
+export const getSeasonStats = async (seasonId: string): Promise<SeasonStats> => {
+  const season = await getSeason(seasonId);
   if (!season) {
     throw new Error(`Season ${seasonId} not found`);
   }
 
-  const allGames = getGamesBySeason(seasonId);
-  const regularSeasonGames = getGamesBySeasonAndType(seasonId, false);
-  const postseasonGames = getGamesBySeasonAndType(seasonId, true);
+  const [allGames, regularSeasonGames, postseasonGames] = await Promise.all([
+    getGamesBySeason(seasonId),
+    getGamesBySeasonAndType(seasonId, false),
+    getGamesBySeasonAndType(seasonId, true),
+  ]);
 
   return {
     season_year: season.season_year,
     team_name: season.team_name,
-    regular_season: aggregateStats(regularSeasonGames.map((g) => g.id)),
-    postseason: aggregateStats(postseasonGames.map((g) => g.id)),
-    combined: aggregateStats(allGames.map((g) => g.id)),
+    regular_season: await aggregateStats(regularSeasonGames.map((g) => g.id)),
+    postseason: await aggregateStats(postseasonGames.map((g) => g.id)),
+    combined: await aggregateStats(allGames.map((g) => g.id)),
   };
 };
 
-export const getCareerStats = (profileId: string): CareerStats => {
-  const seasons = getSeasonsByProfile(profileId);
-  const allGameIds: string[] = [];
+export const getCareerStats = async (profileId: string): Promise<CareerStats> => {
+  const seasons = await getSeasonsByProfile(profileId);
+  const gamesBySeason = await Promise.all(
+    seasons.map((season) => getGamesBySeason(season.id))
+  );
+  const allGames = gamesBySeason.flat();
+  const allGameIds = allGames.map((game) => game.id);
 
-  seasons.forEach((season) => {
-    const games = getGamesBySeason(season.id);
-    allGameIds.push(...games.map((g) => g.id));
-  });
-
-  const regularSeasonGameIds: string[] = [];
-  const postseasonGameIds: string[] = [];
-
-  seasons.forEach((season) => {
-    const regularGames = getGamesBySeasonAndType(season.id, false);
-    const postGames = getGamesBySeasonAndType(season.id, true);
-    regularSeasonGameIds.push(...regularGames.map((g) => g.id));
-    postseasonGameIds.push(...postGames.map((g) => g.id));
-  });
+  const regularSeasonGameIds = allGames
+    .filter((game) => game.is_postseason === 0)
+    .map((game) => game.id);
+  const postseasonGameIds = allGames
+    .filter((game) => game.is_postseason === 1)
+    .map((game) => game.id);
 
   return {
-    regular_season: aggregateStats(regularSeasonGameIds),
-    postseason: aggregateStats(postseasonGameIds),
-    combined: aggregateStats(allGameIds),
+    regular_season: await aggregateStats(regularSeasonGameIds),
+    postseason: await aggregateStats(postseasonGameIds),
+    combined: await aggregateStats(allGameIds),
   };
 };
 
@@ -155,14 +156,16 @@ export interface Milestone {
   game_date?: string;
 }
 
-export const getMilestones = (profileId: string): Milestone[] => {
-  const career = getCareerStats(profileId);
+export const getMilestones = async (profileId: string): Promise<Milestone[]> => {
+  const career = await getCareerStats(profileId);
   const milestones: Milestone[] = [];
-  const seasons = getSeasonsByProfile(profileId);
-  const seasonStats = seasons.map((season) => ({
-    season,
-    stats: getSeasonStats(season.id),
-  }));
+  const seasons = await getSeasonsByProfile(profileId);
+  const seasonStats = await Promise.all(
+    seasons.map(async (season) => ({
+      season,
+      stats: await getSeasonStats(season.id),
+    }))
+  );
 
   // Passing yards milestones
   const passYdsThresholds = [1000, 2000, 4000, 8000, 16000, 32000];
@@ -212,8 +215,8 @@ export interface Streak {
   lastBroken?: string;
 }
 
-export const getStreaks = (seasonId: string): Streak[] => {
-  const games = getGamesBySeason(seasonId);
+export const getStreaks = async (seasonId: string): Promise<Streak[]> => {
+  const games = await getGamesBySeason(seasonId);
   const streaks: Streak[] = [];
 
   // 2+ pass TD streak
@@ -221,10 +224,13 @@ export const getStreaks = (seasonId: string): Streak[] => {
   let longestPassTDStreak = 0;
   let lastPassTDBroken: string | undefined;
 
-  games.reverse(); // Chronological order (oldest first)
+  const chronologicalGames = [...games].reverse(); // Chronological order (oldest first)
+  const statsByGame = await Promise.all(
+    chronologicalGames.map((game) => getGameStats(game.id))
+  );
 
-  games.forEach((game) => {
-    const stats = getGameStats(game.id);
+  chronologicalGames.forEach((game, index) => {
+    const stats = statsByGame[index];
     const passTD =
       stats.find((s) => s.stat_key === 'pass_td')?.stat_value || 0;
 
@@ -254,8 +260,8 @@ export const getStreaks = (seasonId: string): Streak[] => {
   let longestNoINTStreak = 0;
   let lastNoINTBroken: string | undefined;
 
-  games.forEach((game) => {
-    const stats = getGameStats(game.id);
+  chronologicalGames.forEach((game, index) => {
+    const stats = statsByGame[index];
     const passINT =
       stats.find((s) => s.stat_key === 'pass_int')?.stat_value || 0;
 
@@ -285,8 +291,8 @@ export const getStreaks = (seasonId: string): Streak[] => {
   let longest300PlusStreak = 0;
   let last300PlusBroken: string | undefined;
 
-  games.forEach((game) => {
-    const stats = getGameStats(game.id);
+  chronologicalGames.forEach((game, index) => {
+    const stats = statsByGame[index];
     const passYds =
       stats.find((s) => s.stat_key === 'pass_yds')?.stat_value || 0;
 

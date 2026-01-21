@@ -18,13 +18,18 @@ export default function AddGameScreen() {
   // Initialize profile and season on mount
   useEffect(() => {
     const initialize = async () => {
-      const p = getOrCreateDefault();
-      getOrCreateCurrent(p.id);
-      setIsInitializing(false);
+      try {
+        const p = await getOrCreateDefault();
+        await getOrCreateCurrent(p.id);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsInitializing(false);
+      }
     };
 
-    initialize();
-  }, []);
+    void initialize();
+  }, [getOrCreateCurrent, getOrCreateDefault]);
 
   const handleFormChange = (newData: GameFormData) => {
     setFormData(newData);
@@ -40,7 +45,7 @@ export default function AddGameScreen() {
 
     try {
       // Create the game
-      const game = createNewGame(
+      const game = await createNewGame(
         currentSeason.id,
         formData.gameDate,
         formData.opponent,
@@ -50,9 +55,9 @@ export default function AddGameScreen() {
       );
 
       // Set all stats
-      Object.entries(formData.stats).forEach(([key, value]) => {
-        setStat(game.id, key, value);
-      });
+      for (const [key, value] of Object.entries(formData.stats)) {
+        await setStat(game.id, key, value);
+      }
 
       Alert.alert('Success', 'Game saved successfully!', [
         {

@@ -46,21 +46,21 @@ export default function SeasonStatsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadStats();
+      void loadStats();
     }, [selectedSeason])
   );
 
-  const loadStats = () => {
+  const loadStats = async () => {
     try {
       setIsLoading(true);
 
-      const p = getOrCreateDefaultProfile();
+      const p = await getOrCreateDefaultProfile();
       setProfile(p);
-      const season = selectedSeason ?? getOrCreateCurrentSeason(p.id);
+      const season = selectedSeason ?? (await getOrCreateCurrentSeason(p.id));
       if (!selectedSeason) {
         setSelectedSeason(season);
       }
-      const seasonStats = getSeasonStats(season.id);
+      const seasonStats = await getSeasonStats(season.id);
       setStats(seasonStats);
     } catch (error) {
       console.error(error);
@@ -99,8 +99,10 @@ export default function SeasonStatsScreen() {
           selectedSeasonId={selectedSeason?.id ?? null}
           onSeasonChange={(season) => {
             setSelectedSeason(season);
-            const seasonStats = getSeasonStats(season.id);
-            setStats(seasonStats);
+            void (async () => {
+              const seasonStats = await getSeasonStats(season.id);
+              setStats(seasonStats);
+            })();
           }}
         />
       )}

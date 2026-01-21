@@ -40,14 +40,14 @@ export const SeasonPicker: React.FC<SeasonPickerProps> = ({
   const [yearInput, setYearInput] = useState(String(new Date().getFullYear()));
   const [teamInput, setTeamInput] = useState('');
 
-  const refreshSeasons = useCallback(() => {
-    const loaded = getSeasonsByProfile(profileId);
+  const refreshSeasons = useCallback(async () => {
+    const loaded = await getSeasonsByProfile(profileId);
     setSeasons(loaded);
     return loaded;
   }, [profileId]);
 
   useEffect(() => {
-    refreshSeasons();
+    void refreshSeasons();
   }, [refreshSeasons]);
 
   const selectedSeason = useMemo(
@@ -90,7 +90,7 @@ export const SeasonPicker: React.FC<SeasonPickerProps> = ({
     closeModal();
   };
 
-  const handleCreateSeason = () => {
+  const handleCreateSeason = async () => {
     const year = Number(yearInput);
     const team = teamInput.trim();
 
@@ -110,13 +110,13 @@ export const SeasonPicker: React.FC<SeasonPickerProps> = ({
       return;
     }
 
-    const season = createSeason(profileId, year, team);
-    refreshSeasons();
+    const season = await createSeason(profileId, year, team);
+    await refreshSeasons();
     onSeasonChange(season);
     closeModal();
   };
 
-  const handleUpdateTeam = () => {
+  const handleUpdateTeam = async () => {
     if (!selectedSeason) return;
     const team = teamInput.trim();
 
@@ -125,13 +125,13 @@ export const SeasonPicker: React.FC<SeasonPickerProps> = ({
       return;
     }
 
-    const updated = updateSeason(selectedSeason.id, { team_name: team });
+    const updated = await updateSeason(selectedSeason.id, { team_name: team });
     if (!updated) {
       Alert.alert('Error', 'Failed to update season');
       return;
     }
 
-    refreshSeasons();
+    await refreshSeasons();
     onSeasonChange(updated);
     closeModal();
   };

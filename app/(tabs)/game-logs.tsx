@@ -39,22 +39,31 @@ export default function GameLogsScreen() {
   // Load current season and games whenever screen is focused
   useFocusEffect(
     useCallback(() => {
-      const p = getOrCreateDefaultProfile();
-      setProfile(p);
-      const season = selectedSeason ?? getOrCreateCurrentSeason(p.id);
-      if (!selectedSeason) {
-        setSelectedSeason(season);
-      }
-      loadGames(season.id);
+      const initialize = async () => {
+        try {
+          const p = await getOrCreateDefaultProfile();
+          setProfile(p);
+          const season = selectedSeason ?? (await getOrCreateCurrentSeason(p.id));
+          if (!selectedSeason) {
+            setSelectedSeason(season);
+          }
+          await loadGames(season.id);
+        } catch (error) {
+          console.error(error);
+          setIsLoading(false);
+        }
+      };
+
+      void initialize();
     }, [selectedSeason, filter, sortOrder])
   );
 
-  const loadGames = (seasonId: string) => {
+  const loadGames = async (seasonId: string) => {
     try {
       setIsLoading(true);
 
       // Get games for current season
-      const allGames = getGamesBySeason(seasonId);
+      const allGames = await getGamesBySeason(seasonId);
       const filteredGames = allGames.filter((game) => {
         if (filter === 'regular') return game.is_postseason === 0;
         if (filter === 'postseason') return game.is_postseason === 1;
@@ -67,22 +76,26 @@ export default function GameLogsScreen() {
       });
 
       // Enrich with stats
-      const gamesWithStats = sortedGames.map((game) => {
-        const stats = getGameStats(game.id);
-        const passYds = stats.find((s) => s.stat_key === 'pass_yds')?.stat_value || 0;
-        const passTD = stats.find((s) => s.stat_key === 'pass_td')?.stat_value || 0;
+      const gamesWithStats = await Promise.all(
+        sortedGames.map(async (game) => {
+          const stats = await getGameStats(game.id);
+          const passYds =
+            stats.find((s) => s.stat_key === 'pass_yds')?.stat_value || 0;
+          const passTD =
+            stats.find((s) => s.stat_key === 'pass_td')?.stat_value || 0;
 
-        return {
-          id: game.id,
-          opponent: game.opponent,
-          gameDate: game.game_date,
-          week: game.week,
-          isPostseason: game.is_postseason,
-          result: game.result,
-          passYds,
-          passTD,
-        };
-      });
+          return {
+            id: game.id,
+            opponent: game.opponent,
+            gameDate: game.game_date,
+            week: game.week,
+            isPostseason: game.is_postseason,
+            result: game.result,
+            passYds,
+            passTD,
+          };
+        })
+      );
 
       setGames(gamesWithStats);
     } catch (error) {

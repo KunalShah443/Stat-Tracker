@@ -43,24 +43,24 @@ export default function CareerStatsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadStats();
+      void loadStats();
     }, [])
   );
 
-  const loadStats = () => {
+  const loadStats = async () => {
     try {
       setIsLoading(true);
 
-      const profile = getOrCreateDefaultProfile();
-      const seasons = getSeasonsByProfile(profile.id);
+      const profile = await getOrCreateDefaultProfile();
+      const seasons = await getSeasonsByProfile(profile.id);
 
       // Count total games
-      const totalGames = seasons.reduce((acc, season) => {
-        const games = getGamesBySeason(season.id);
-        return acc + games.length;
-      }, 0);
+      const gamesBySeason = await Promise.all(
+        seasons.map((season) => getGamesBySeason(season.id))
+      );
+      const totalGames = gamesBySeason.reduce((acc, games) => acc + games.length, 0);
 
-      const careerStats = getCareerStats(profile.id);
+      const careerStats = await getCareerStats(profile.id);
       setStats(careerStats);
       setGameCount(totalGames);
     } catch (error) {

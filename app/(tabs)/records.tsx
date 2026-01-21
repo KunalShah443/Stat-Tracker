@@ -17,7 +17,7 @@ export default function RecordsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadRecords();
+      void loadRecords();
     }, [])
   );
 
@@ -25,11 +25,11 @@ export default function RecordsScreen() {
     try {
       setIsLoading(true);
 
-      const profile = getOrCreateDefaultProfile();
-      const season = getOrCreateCurrentSeason(profile.id);
+      const profile = await getOrCreateDefaultProfile();
+      const season = await getOrCreateCurrentSeason(profile.id);
 
-      const milestonesData = getMilestones(profile.id);
-      const streaksData = getStreaks(season.id);
+      const milestonesData = await getMilestones(profile.id);
+      const streaksData = await getStreaks(season.id);
 
       setMilestones(milestonesData);
       setStreaks(streaksData);

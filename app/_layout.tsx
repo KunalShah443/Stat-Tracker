@@ -30,7 +30,9 @@ export default function RootLayout() {
 
   // Initialize database on app startup
   useEffect(() => {
-    initDb();
+    initDb().catch((err) => {
+      console.error('Failed to initialize database', err);
+    });
   }, []);
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
