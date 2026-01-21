@@ -1,0 +1,63 @@
+export const SCHEMA_VERSION = 1;
+
+/**
+ * Notes:
+ * - WAL mode improves performance for lots of small writes.
+ * - foreign_keys ON ensures cascades work.
+ * - We keep stats in a key/value table so adding new positions later is easy.
+ */
+export const CREATE_TABLES_SQL = `
+PRAGMA journal_mode = WAL;
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS meta (
+  key TEXT PRIMARY KEY NOT NULL,
+  value TEXT NOT NULL
+);
+
+-- One profile for now (you), but allow multiple later.
+CREATE TABLE IF NOT EXISTS profiles (
+  id TEXT PRIMARY KEY NOT NULL,
+  sport TEXT NOT NULL,          -- "madden"
+  position TEXT NOT NULL,       -- "QB" (later RB/WR/LB/EDGE/CB)
+  player_name TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+-- Seasons are by year: 2025, 2026, etc.
+CREATE TABLE IF NOT EXISTS seasons (
+  id TEXT PRIMARY KEY NOT NULL,
+  profile_id TEXT NOT NULL,
+  season_year INTEGER NOT NULL, -- e.g. 2025
+  team_name TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  FOREIGN KEY(profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+);
+
+-- Each game belongs to a season.
+CREATE TABLE IF NOT EXISTS games (
+  id TEXT PRIMARY KEY NOT NULL,
+  season_id TEXT NOT NULL,
+  game_date TEXT NOT NULL,      -- ISO string
+  opponent TEXT NOT NULL,
+  week INTEGER,                 -- optional
+  is_postseason INTEGER NOT NULL DEFAULT 0, -- 0/1
+  result TEXT,                  -- "W" | "L" | "T" | null
+  created_at TEXT NOT NULL,
+  FOREIGN KEY(season_id) REFERENCES seasons(id) ON DELETE CASCADE
+);
+
+-- Key/value stats per game (QB now, other positions later).
+CREATE TABLE IF NOT EXISTS game_stats (
+  id TEXT PRIMARY KEY NOT NULL,
+  game_id TEXT NOT NULL,
+  stat_key TEXT NOT NULL,       -- e.g. "pass_yds"
+  stat_value REAL NOT NULL,
+  FOREIGN KEY(game_id) REFERENCES games(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_seasons_profile_id ON seasons(profile_id);
+CREATE INDEX IF NOT EXISTS idx_games_season_id ON games(season_id);
+CREATE INDEX IF NOT EXISTS idx_game_stats_game_id ON game_stats(game_id);
+CREATE INDEX IF NOT EXISTS idx_game_stats_stat_key ON game_stats(stat_key);
+`;
