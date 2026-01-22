@@ -1,7 +1,9 @@
+import FieldBackdrop from '@/components/FieldBackdrop';
 import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { getOrCreateCurrentSeason, getOrCreateDefaultProfile } from '@/src/db/database';
 import { getMilestones, getStreaks } from '@/src/db/queries';
 import { useFocusEffect } from '@react-navigation/native';
@@ -15,7 +17,8 @@ import {
 
 export default function RecordsScreen() {
   const colorScheme = useColorScheme();
-  const tintColor = Colors[colorScheme ?? 'light'].tint;
+  const theme = Colors[colorScheme ?? 'light'];
+  const tintColor = theme.tint;
   const [isLoading, setIsLoading] = useState(true);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [streaks, setStreaks] = useState<any[]>([]);
@@ -49,21 +52,28 @@ export default function RecordsScreen() {
     <RNView
       style={[
         styles.milestoneItem,
-        milestone.achieved && styles.milestoneItemAchieved,
+        { backgroundColor: theme.surface, borderColor: theme.borderSoft },
+        milestone.achieved && {
+          borderColor: theme.tint,
+          backgroundColor: theme.tintSoft,
+          opacity: 1,
+        },
       ]}>
       <RNView
         style={[
           styles.milestoneCheckbox,
-          milestone.achieved && styles.milestoneCheckboxAchieved,
+          { borderColor: theme.borderSoft, backgroundColor: theme.surface2 },
+          milestone.achieved && { borderColor: theme.tint, backgroundColor: theme.tint },
         ]}>
-        {milestone.achieved && (
-          <Text style={styles.checkmark}>✓</Text>
-        )}
+        {milestone.achieved ? (
+          <FontAwesome name="check" size={12} color="#0B1220" />
+        ) : null}
       </RNView>
       <Text
         style={[
           styles.milestoneLabel,
           milestone.achieved && styles.milestoneLabelAchieved,
+          { color: milestone.achieved ? theme.text : theme.muted },
         ]}>
         {milestone.label}
       </Text>
@@ -71,17 +81,26 @@ export default function RecordsScreen() {
   );
 
   const StreakItem = ({ streak }: { streak: any }) => (
-    <RNView style={styles.streakItem}>
-      <Text style={styles.streakLabel}>{streak.label}</Text>
+    <RNView
+      style={[
+        styles.streakItem,
+        { backgroundColor: theme.surface, borderColor: theme.borderSoft },
+      ]}>
+      <RNView style={[styles.cardStripe, { backgroundColor: theme.accent2 }]} />
+      <Text style={[styles.streakLabel, { color: theme.text }]}>{streak.label}</Text>
       <RNView style={styles.streakStats}>
         <RNView style={styles.streakStat}>
-          <Text style={styles.streakStatValue}>{streak.currentStreak}</Text>
-          <Text style={styles.streakStatLabel}>Current</Text>
+          <Text style={[styles.streakStatValue, { color: theme.text }]}>
+            {streak.currentStreak}
+          </Text>
+          <Text style={[styles.streakStatLabel, { color: theme.muted }]}>Current</Text>
         </RNView>
-        <RNView style={styles.streakDivider} />
+        <RNView style={[styles.streakDivider, { backgroundColor: theme.borderSoft }]} />
         <RNView style={styles.streakStat}>
-          <Text style={styles.streakStatValue}>{streak.longestStreak}</Text>
-          <Text style={styles.streakStatLabel}>Best</Text>
+          <Text style={[styles.streakStatValue, { color: theme.text }]}>
+            {streak.longestStreak}
+          </Text>
+          <Text style={[styles.streakStatLabel, { color: theme.muted }]}>Best</Text>
         </RNView>
       </RNView>
     </RNView>
@@ -90,26 +109,31 @@ export default function RecordsScreen() {
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" />
+        <FieldBackdrop variant="subtle" />
+        <ActivityIndicator size="large" color={tintColor} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <FieldBackdrop variant="subtle" />
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.borderSoft }]}>
         <View style={styles.headerRow}>
           <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Records & Milestones</Text>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>
+              Records & Milestones
+            </Text>
           </View>
           <HomeButton color={tintColor} />
         </View>
+        <View style={[styles.headerRule, { backgroundColor: theme.tintSoft }]} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Streaks */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Current Streaks</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Current Streaks</Text>
           {streaks.map((streak) => (
             <StreakItem key={streak.type} streak={streak} />
           ))}
@@ -117,10 +141,10 @@ export default function RecordsScreen() {
 
         {/* Career Milestones */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Career Milestones</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Career Milestones</Text>
 
           {/* Passing Yards */}
-          <Text style={styles.subsectionTitle}>Passing Yards</Text>
+          <Text style={[styles.subsectionTitle, { color: theme.muted }]}>Passing Yards</Text>
           {milestones
             .filter((m) => m.type.startsWith('pass_yds_'))
             .map((milestone) => (
@@ -128,7 +152,7 @@ export default function RecordsScreen() {
             ))}
 
           {/* Passing TDs */}
-          <Text style={[styles.subsectionTitle, { marginTop: 15 }]}>
+          <Text style={[styles.subsectionTitle, { marginTop: 15, color: theme.muted }]}>
             Passing Touchdowns
           </Text>
           {milestones
@@ -138,7 +162,7 @@ export default function RecordsScreen() {
             ))}
 
           {/* Season Records */}
-          <Text style={[styles.subsectionTitle, { marginTop: 15 }]}>
+          <Text style={[styles.subsectionTitle, { marginTop: 15, color: theme.muted }]}>
             Single Season Records
           </Text>
           {milestones
@@ -167,7 +191,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   headerRow: {
     flexDirection: 'row',
@@ -179,7 +202,14 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
+  },
+  headerRule: {
+    height: 2,
+    width: 56,
+    borderRadius: 2,
+    marginTop: 8,
   },
   content: {
     flex: 1,
@@ -190,13 +220,14 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
     marginBottom: 12,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.3,
   },
   subsectionTitle: {
     fontSize: 14,
-    fontWeight: '500',
-    opacity: 0.7,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
     marginBottom: 10,
   },
   milestoneItem: {
@@ -205,52 +236,46 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 8,
-    borderRadius: 6,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    opacity: 0.6,
-  },
-  milestoneItemAchieved: {
-    borderColor: '#4caf50',
-    opacity: 1,
-    backgroundColor: 'rgba(76, 175, 80, 0.05)',
+    opacity: 0.85,
   },
   milestoneCheckbox: {
     width: 18,
     height: 18,
     borderRadius: 3,
     borderWidth: 2,
-    borderColor: '#ccc',
     marginRight: 10,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  milestoneCheckboxAchieved: {
-    borderColor: '#4caf50',
-    backgroundColor: '#4caf50',
-  },
-  checkmark: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
   milestoneLabel: {
     fontSize: 14,
   },
   milestoneLabelAchieved: {
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
   },
   streakItem: {
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 10,
-    borderRadius: 6,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    overflow: 'hidden',
+  },
+  cardStripe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 72,
+    height: 3,
+    borderBottomRightRadius: 12,
   },
   streakLabel: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
     marginBottom: 10,
   },
   streakStats: {
@@ -263,16 +288,16 @@ const styles = StyleSheet.create({
   },
   streakStatValue: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
     marginBottom: 2,
   },
   streakStatLabel: {
     fontSize: 11,
-    opacity: 0.6,
+    letterSpacing: 0.2,
   },
   streakDivider: {
     width: 1,
     height: 30,
-    backgroundColor: '#e0e0e0',
   },
 });

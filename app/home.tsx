@@ -1,50 +1,24 @@
+import FieldBackdrop from '@/components/FieldBackdrop';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
+import Colors from '@/constants/Colors';
 import { router } from 'expo-router';
 import React from 'react';
 import { Pressable, StyleSheet, View as RNView } from 'react-native';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
-  const palette =
-    colorScheme === 'dark'
-      ? {
-          background: '#11110f',
-          text: '#f3efe6',
-          muted: '#a7a197',
-          kicker: '#f4c95d',
-          card: '#1a1814',
-          cardBorder: '#2d2a24',
-          tagNew: '#ff7a45',
-          tagContinue: '#2a9d8f',
-          orb1: 'rgba(255, 183, 3, 0.25)',
-          orb2: 'rgba(33, 158, 188, 0.2)',
-        }
-      : {
-          background: '#f5f1e8',
-          text: '#1b1b1b',
-          muted: '#5f5a51',
-          kicker: '#9a6b2f',
-          card: '#fffaf0',
-          cardBorder: '#e0d6c6',
-          tagNew: '#ff7a45',
-          tagContinue: '#2a9d8f',
-          orb1: 'rgba(244, 201, 93, 0.35)',
-          orb2: 'rgba(78, 205, 196, 0.25)',
-        };
+  const theme = Colors[colorScheme ?? 'light'];
 
   return (
-    <View style={[styles.container, { backgroundColor: palette.background }]}>
-      <RNView pointerEvents="none" style={[styles.orb, { backgroundColor: palette.orb1 }]} />
-      <RNView
-        pointerEvents="none"
-        style={[styles.orb, styles.orbTwo, { backgroundColor: palette.orb2 }]}
-      />
+    <View style={styles.container}>
+      <FieldBackdrop variant="hero" />
 
       <View style={styles.content}>
-        <Text style={[styles.kicker, { color: palette.kicker }]}>STAT TRACKER</Text>
-        <Text style={[styles.title, { color: palette.text }]}>Welcome back.</Text>
-        <Text style={[styles.subtitle, { color: palette.muted }]}>
+        <Text style={[styles.kicker, { color: theme.accent2 }]}>STAT TRACKER</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Ready for kickoff.</Text>
+        <RNView style={[styles.titleRule, { backgroundColor: theme.tintSoft }]} />
+        <Text style={[styles.subtitle, { color: theme.muted }]}>
           Start fresh or keep the streak alive.
         </Text>
 
@@ -52,36 +26,40 @@ export default function HomeScreen() {
           <Pressable
             style={({ pressed }) => [
               styles.card,
-              { backgroundColor: palette.card, borderColor: palette.cardBorder },
+              { backgroundColor: theme.surface, borderColor: theme.border },
               pressed && styles.cardPressed,
+              pressed && { borderColor: theme.accent2 },
             ]}
             onPress={() => router.push('/new-player')}
           >
-            <Text style={[styles.cardTitle, { color: palette.text }]}>New Player</Text>
-            <Text style={[styles.cardBody, { color: palette.muted }]}>
+            <RNView style={[styles.cardStripe, { backgroundColor: theme.accent2 }]} />
+            <Text style={[styles.cardTitle, { color: theme.text }]}>New Player</Text>
+            <Text style={[styles.cardBody, { color: theme.muted }]}>
               Create your first season and log game one.
             </Text>
-            <RNView style={[styles.cardTag, { backgroundColor: palette.tagNew }]}>
-              <Text style={styles.cardTagText}>Fresh start</Text>
+            <RNView style={[styles.cardTag, { backgroundColor: theme.accent2 }]}>
+              <Text style={styles.cardTagText}>ROOKIE</Text>
             </RNView>
           </Pressable>
 
           <Pressable
             style={({ pressed }) => [
               styles.card,
-              { backgroundColor: palette.card, borderColor: palette.cardBorder },
+              { backgroundColor: theme.surface, borderColor: theme.border },
               pressed && styles.cardPressed,
+              pressed && { borderColor: theme.tint },
             ]}
             onPress={() => router.push('/continue-player')}
           >
-            <Text style={[styles.cardTitle, { color: palette.text }]}>
+            <RNView style={[styles.cardStripe, { backgroundColor: theme.tint }]} />
+            <Text style={[styles.cardTitle, { color: theme.text }]}>
               Continuing Player
             </Text>
-            <Text style={[styles.cardBody, { color: palette.muted }]}>
+            <Text style={[styles.cardBody, { color: theme.muted }]}>
               Jump into your latest season and keep building.
             </Text>
-            <RNView style={[styles.cardTag, { backgroundColor: palette.tagContinue }]}>
-              <Text style={styles.cardTagText}>Pick up</Text>
+            <RNView style={[styles.cardTag, { backgroundColor: theme.tint }]}>
+              <Text style={styles.cardTagText}>CONTINUE</Text>
             </RNView>
           </Pressable>
         </RNView>
@@ -111,6 +89,12 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceMono',
     marginBottom: 10,
   },
+  titleRule: {
+    height: 2,
+    width: 72,
+    borderRadius: 2,
+    marginBottom: 14,
+  },
   subtitle: {
     fontSize: 15,
     lineHeight: 22,
@@ -121,13 +105,22 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: 16,
     paddingHorizontal: 18,
     paddingVertical: 18,
+    overflow: 'hidden',
   },
   cardPressed: {
     transform: [{ translateY: 2 }],
     opacity: 0.9,
+  },
+  cardStripe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 64,
+    height: 3,
+    borderBottomRightRadius: 12,
   },
   cardTitle: {
     fontSize: 18,
@@ -146,24 +139,9 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   cardTagText: {
-    color: '#fff',
+    color: '#0B1220',
     fontSize: 11,
     fontFamily: 'SpaceMono',
     letterSpacing: 0.6,
-  },
-  orb: {
-    position: 'absolute',
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    top: -80,
-    right: -70,
-  },
-  orbTwo: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    bottom: -60,
-    left: -60,
   },
 });

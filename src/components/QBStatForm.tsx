@@ -10,7 +10,7 @@ import {
   QBStatKey,
 } from '@/src/types/stats';
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, TextInput, View as RNView } from 'react-native';
 
 interface QBStatFormProps {
   formData: GameFormData;
@@ -26,7 +26,7 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
   isLoading = false,
 }) => {
   const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === 'dark';
+  const theme = Colors[colorScheme ?? 'light'];
   const [showPostseasonOptions, setShowPostseasonOptions] = useState(false);
 
   const updateBasicField = (field: keyof Omit<GameFormData, 'stats'>, value: any) => {
@@ -57,20 +57,26 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
     onSubmit();
   };
 
-  const inputBackground = isDarkMode ? '#333' : '#f0f0f0';
-  const inputBorder = isDarkMode ? '#555' : '#ddd';
-  const inputText = isDarkMode ? '#fff' : '#000';
-  const placeholderText = isDarkMode ? '#999' : '#666';
+  const inputBackground = theme.surface2;
+  const inputBorder = theme.borderSoft;
+  const inputText = theme.text;
+  const placeholderText = theme.muted;
   const selectedPostseasonLabel = getPostseasonRoundLabel(formData.week ?? null);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Basic Game Info */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Game Info</Text>
+      <View
+        style={[
+          styles.section,
+          { backgroundColor: theme.surface, borderColor: theme.borderSoft },
+        ]}
+      >
+        <RNView style={[styles.sectionStripe, { backgroundColor: theme.tint }]} />
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Game Info</Text>
 
         <View style={styles.formGroup}>
-          <Text style={styles.label}>Opponent</Text>
+          <Text style={[styles.label, { color: theme.muted }]}>Opponent</Text>
           <TextInput
             style={[
               styles.input,
@@ -89,7 +95,7 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
 
         <View style={styles.row}>
           <View style={[styles.formGroup, { flex: 1 }]}>
-            <Text style={styles.label}>
+            <Text style={[styles.label, { color: theme.muted }]}>
               {formData.isPostseason ? 'Postseason Round' : 'Week (Optional)'}
             </Text>
             {formData.isPostseason ? (
@@ -115,7 +121,15 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
                   </Text>
                 </Pressable>
                 {showPostseasonOptions && (
-                  <View style={[styles.dropdown, { borderColor: inputBorder }]}>
+                  <View
+                    style={[
+                      styles.dropdown,
+                      {
+                        borderColor: inputBorder,
+                        backgroundColor: theme.surface,
+                      },
+                    ]}
+                  >
                     {POSTSEASON_ROUNDS.map((round) => {
                       const isSelected = formData.week === round.value;
                       return (
@@ -124,7 +138,7 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
                           style={[
                             styles.dropdownOption,
                             isSelected && {
-                              backgroundColor: Colors[colorScheme ?? 'light'].tint,
+                              backgroundColor: theme.tint,
                             },
                           ]}
                           onPress={() => {
@@ -135,7 +149,8 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
                           <Text
                             style={[
                               styles.dropdownOptionText,
-                              isSelected && { color: '#fff' },
+                              { color: theme.text },
+                              isSelected && { color: '#0B1220' },
                             ]}
                           >
                             {round.label}
@@ -168,15 +183,17 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
           </View>
 
           <View style={[styles.formGroup, { flex: 1, marginLeft: 10 }]}>
-            <Text style={styles.label}>Result</Text>
+            <Text style={[styles.label, { color: theme.muted }]}>Result</Text>
             <View style={styles.buttonGroup}>
               {(['W', 'L', 'T'] as const).map((r) => (
                 <Pressable
                   key={r}
                   style={[
                     styles.resultButton,
+                    { borderColor: inputBorder, backgroundColor: inputBackground },
                     formData.result === r && {
-                      backgroundColor: Colors[colorScheme ?? 'light'].tint,
+                      backgroundColor: theme.tint,
+                      borderColor: theme.tint,
                     },
                   ]}
                   onPress={() => updateBasicField('result', r)}
@@ -184,7 +201,8 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
                   <Text
                     style={[
                       styles.resultButtonText,
-                      formData.result === r && { color: '#fff' },
+                      { color: theme.text },
+                      formData.result === r && { color: '#0B1220' },
                     ]}
                   >
                     {r}
@@ -212,24 +230,34 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
               <View
                 style={[
                   styles.checkboxInner,
+                  { borderColor: inputBorder },
                   formData.isPostseason && {
-                    backgroundColor: Colors[colorScheme ?? 'light'].tint,
+                    backgroundColor: theme.tint,
+                    borderColor: theme.tint,
                   },
                 ]}
               />
-              <Text style={styles.checkboxLabel}>Postseason Game</Text>
+              <Text style={[styles.checkboxLabel, { color: theme.text }]}>
+                Postseason Game
+              </Text>
             </Pressable>
           </View>
         </View>
       </View>
 
       {/* QB Stats */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>QB Stats</Text>
+      <View
+        style={[
+          styles.section,
+          { backgroundColor: theme.surface, borderColor: theme.borderSoft },
+        ]}
+      >
+        <RNView style={[styles.sectionStripe, { backgroundColor: theme.accent2 }]} />
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>QB Stats</Text>
 
         {Object.entries(QB_STATS).map(([key, config]) => (
           <View key={key} style={styles.formGroup}>
-            <Text style={styles.label}>{config.label}</Text>
+            <Text style={[styles.label, { color: theme.muted }]}>{config.label}</Text>
             <TextInput
               style={[
                 styles.input,
@@ -254,7 +282,7 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
         style={[
           styles.submitButton,
           {
-            backgroundColor: Colors[colorScheme ?? 'light'].tint,
+            backgroundColor: theme.tint,
             opacity: isLoading ? 0.6 : 1,
           },
         ]}
@@ -278,23 +306,38 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 25,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 14,
+    overflow: 'hidden',
+  },
+  sectionStripe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 72,
+    height: 3,
+    borderBottomRightRadius: 12,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 15,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
   formGroup: {
     marginBottom: 12,
   },
   label: {
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 10,
     fontSize: 14,
@@ -317,7 +360,8 @@ const styles = StyleSheet.create({
   },
   dropdownOptionText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
   },
   row: {
     flexDirection: 'row',
@@ -331,12 +375,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#ccc',
     alignItems: 'center',
   },
   resultButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
   checkboxRow: {
     flexDirection: 'row',
@@ -357,16 +401,20 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: 14,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
   },
   submitButton: {
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 999,
     alignItems: 'center',
     marginTop: 10,
   },
   submitButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: '#0B1220',
+    fontSize: 14,
     fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.6,
   },
 });

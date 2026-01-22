@@ -1,3 +1,4 @@
+import FieldBackdrop from '@/components/FieldBackdrop';
 import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -11,7 +12,8 @@ import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
 
 export default function AddGameScreen() {
   const colorScheme = useColorScheme();
-  const tintColor = Colors[colorScheme ?? 'light'].tint;
+  const theme = Colors[colorScheme ?? 'light'];
+  const tintColor = theme.tint;
   const [formData, setFormData] = useState<GameFormData>(DEFAULT_GAME_FORM_DATA);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -86,7 +88,8 @@ export default function AddGameScreen() {
   if (isInitializing) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" />
+        <FieldBackdrop variant="subtle" />
+        <ActivityIndicator size="large" color={tintColor} />
       </View>
     );
   }
@@ -94,6 +97,7 @@ export default function AddGameScreen() {
   if (!profile || !currentSeason) {
     return (
       <View style={styles.container}>
+        <FieldBackdrop variant="subtle" />
         <Text style={styles.errorText}>Failed to load profile or season</Text>
       </View>
     );
@@ -101,11 +105,13 @@ export default function AddGameScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <FieldBackdrop variant="subtle" />
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.borderSoft }]}>
         <View style={styles.headerRow}>
-          <Text style={styles.headerTitle}>New Game</Text>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>New Game</Text>
           <HomeButton color={tintColor} />
         </View>
+        <View style={[styles.headerRule, { backgroundColor: theme.tintSoft }]} />
       </View>
       {profile && (
         <SeasonPicker
@@ -132,7 +138,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   headerRow: {
     flexDirection: 'row',
@@ -141,7 +146,14 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
+  },
+  headerRule: {
+    height: 2,
+    width: 56,
+    borderRadius: 2,
+    marginTop: 8,
   },
   errorText: {
     fontSize: 16,

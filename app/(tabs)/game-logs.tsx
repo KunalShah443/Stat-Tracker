@@ -1,3 +1,4 @@
+import FieldBackdrop from '@/components/FieldBackdrop';
 import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -34,7 +35,8 @@ interface GameWithStats {
 
 export default function GameLogsScreen() {
   const colorScheme = useColorScheme();
-  const tintColor = Colors[colorScheme ?? 'light'].tint;
+  const theme = Colors[colorScheme ?? 'light'];
+  const tintColor = theme.tint;
   const router = useRouter();
   const [games, setGames] = useState<GameWithStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -121,12 +123,19 @@ export default function GameLogsScreen() {
     return null;
   };
 
+  const badgeTextColor = colorScheme === 'dark' ? '#0B1220' : '#fff';
+
   const renderGameItem = ({ item }: { item: GameWithStats }) => {
     const weekLabel = formatWeekLabel(item);
 
     return (
       <Pressable
-        style={styles.gameCard}
+        style={({ pressed }) => [
+          styles.gameCard,
+          { backgroundColor: theme.surface, borderColor: theme.borderSoft },
+          pressed && styles.gameCardPressed,
+          pressed && { borderColor: theme.tint },
+        ]}
         onPress={() => router.push(`/game-log/${item.id}`)}
       >
         <View
@@ -135,28 +144,32 @@ export default function GameLogsScreen() {
             {
               backgroundColor:
                 item.result === 'W'
-                  ? '#4caf50'
+                  ? theme.success
                   : item.result === 'L'
-                  ? '#f44336'
-                  : '#ff9800',
+                  ? theme.danger
+                  : theme.warning,
             },
           ]}
         >
-          <Text style={styles.resultText}>{item.result || '-'}</Text>
+          <Text style={[styles.resultText, { color: badgeTextColor }]}>
+            {item.result || '-'}
+          </Text>
         </View>
 
         <View style={styles.gameInfo}>
           <Text style={styles.opponent}>{item.opponent}</Text>
-          {weekLabel && <Text style={styles.dateText}>{weekLabel}</Text>}
+          {weekLabel && (
+            <Text style={[styles.dateText, { color: theme.muted }]}>{weekLabel}</Text>
+          )}
         </View>
 
         <View style={styles.stats}>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Pass Yds</Text>
+            <Text style={[styles.statLabel, { color: theme.muted }]}>Pass Yds</Text>
             <Text style={styles.statValue}>{item.passYds}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Pass TD</Text>
+            <Text style={[styles.statLabel, { color: theme.muted }]}>Pass TD</Text>
             <Text style={styles.statValue}>{item.passTD}</Text>
           </View>
         </View>
@@ -167,21 +180,26 @@ export default function GameLogsScreen() {
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" />
+        <FieldBackdrop variant="subtle" />
+        <ActivityIndicator size="large" color={tintColor} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <FieldBackdrop variant="subtle" />
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.borderSoft }]}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.headerTitle}>Game Logs</Text>
-            <Text style={styles.headerSubtitle}>{games.length} games</Text>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>Game Logs</Text>
+            <Text style={[styles.headerSubtitle, { color: theme.muted }]}>
+              {games.length} games
+            </Text>
           </View>
           <HomeButton color={tintColor} />
         </View>
+        <View style={[styles.headerRule, { backgroundColor: theme.tintSoft }]} />
       </View>
       {profile && (
         <SeasonPicker
@@ -190,28 +208,37 @@ export default function GameLogsScreen() {
           onSeasonChange={setSelectedSeason}
         />
       )}
-      <View style={styles.controls}>
+      <View style={[styles.controls, { backgroundColor: theme.surface, borderBottomColor: theme.borderSoft }]}>
         <View style={styles.filterGroup}>
           {(['all', 'regular', 'postseason'] as const).map((value) => (
             <Pressable
               key={value}
               style={[
                 styles.filterButton,
-                filter === value && styles.filterButtonActive,
+                { borderColor: theme.borderSoft, backgroundColor: theme.surface2 },
+                filter === value && {
+                  backgroundColor: theme.tintSoft,
+                  borderColor: theme.tint,
+                },
               ]}
               onPress={() => setFilter(value)}
             >
-              <Text style={styles.filterText}>
+              <Text
+                style={[
+                  styles.filterText,
+                  { color: filter === value ? theme.tint : theme.muted },
+                ]}
+              >
                 {value === 'all' ? 'All' : value === 'regular' ? 'Regular' : 'Postseason'}
               </Text>
             </Pressable>
           ))}
         </View>
         <Pressable
-          style={styles.sortButton}
+          style={[styles.sortButton, { borderColor: theme.borderSoft, backgroundColor: theme.surface2 }]}
           onPress={() => setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
         >
-          <Text style={styles.sortText}>
+          <Text style={[styles.sortText, { color: theme.muted }]}>
             {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
           </Text>
         </Pressable>
@@ -227,7 +254,7 @@ export default function GameLogsScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No games logged</Text>
+            <Text style={[styles.emptyText, { color: theme.text }]}>No games logged</Text>
           </View>
         }
       />
@@ -248,7 +275,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   headerRow: {
     flexDirection: 'row',
@@ -257,18 +283,23 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 13,
-    opacity: 0.6,
+  },
+  headerRule: {
+    height: 2,
+    width: 56,
+    borderRadius: 2,
+    marginTop: 8,
   },
   controls: {
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -282,25 +313,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  filterButtonActive: {
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
   filterText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.3,
   },
   sortButton: {
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
   },
   sortText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.3,
   },
   listContent: {
     padding: 15,
@@ -318,9 +346,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+  },
+  gameCardPressed: {
+    transform: [{ translateY: 1 }],
+    opacity: 0.95,
   },
   resultBadge: {
     width: 36,
@@ -340,12 +371,12 @@ const styles = StyleSheet.create({
   },
   opponent: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
     marginBottom: 4,
   },
   dateText: {
     fontSize: 12,
-    opacity: 0.6,
   },
   stats: {
     flexDirection: 'row',
@@ -356,15 +387,16 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 10,
-    opacity: 0.6,
     marginBottom: 2,
   },
   statValue: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
 });

@@ -29,10 +29,32 @@ export default function Root({ children }: { children: React.ReactNode }) {
 
 const responsiveBackground = `
 body {
-  background-color: #fff;
+  background-color: #F6F8FC;
+  background-image:
+    radial-gradient(900px 560px at 18% 6%, rgba(182, 255, 0, 0.14), transparent 60%),
+    radial-gradient(720px 520px at 92% 84%, rgba(0, 209, 255, 0.12), transparent 55%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(11, 18, 32, 0.04) 0px,
+      rgba(11, 18, 32, 0.04) 1px,
+      transparent 1px,
+      transparent 72px
+    );
+  background-attachment: fixed;
 }
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #000;
+    background-color: #05080D;
+    background-image:
+      radial-gradient(980px 620px at 16% 8%, rgba(182, 255, 0, 0.18), transparent 60%),
+      radial-gradient(760px 560px at 92% 86%, rgba(0, 209, 255, 0.16), transparent 55%),
+      repeating-linear-gradient(
+        0deg,
+        rgba(233, 240, 250, 0.05) 0px,
+        rgba(233, 240, 250, 0.05) 1px,
+        transparent 1px,
+        transparent 72px
+      );
+    background-attachment: fixed;
   }
 }`;

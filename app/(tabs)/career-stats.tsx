@@ -1,7 +1,9 @@
+import FieldBackdrop from '@/components/FieldBackdrop';
 import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
+import { StatTile } from '@/src/components/StatTile';
 import {
   getGamesBySeason,
   getOrCreateDefaultProfile,
@@ -17,31 +19,10 @@ import {
     StyleSheet,
 } from 'react-native';
 
-interface StatDisplayProps {
-  label: string;
-  total: number;
-  average: number;
-  games: number;
-}
-
-const StatDisplay: React.FC<StatDisplayProps> = ({
-  label,
-  total,
-  average,
-  games,
-}) => (
-  <RNView style={styles.statBox}>
-    <Text style={styles.statBoxLabel}>{label}</Text>
-    <Text style={styles.statBoxValue}>{total.toFixed(1)}</Text>
-    <Text style={styles.statBoxAverage}>
-      {average.toFixed(1)}/game
-    </Text>
-  </RNView>
-);
-
 export default function CareerStatsScreen() {
   const colorScheme = useColorScheme();
-  const tintColor = Colors[colorScheme ?? 'light'].tint;
+  const theme = Colors[colorScheme ?? 'light'];
+  const tintColor = theme.tint;
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const [gameCount, setGameCount] = useState(0);
@@ -78,7 +59,8 @@ export default function CareerStatsScreen() {
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" />
+        <FieldBackdrop variant="subtle" />
+        <ActivityIndicator size="large" color={tintColor} />
       </View>
     );
   }
@@ -86,21 +68,28 @@ export default function CareerStatsScreen() {
   if (!stats) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>No career stats available</Text>
+        <FieldBackdrop variant="subtle" />
+        <Text style={[styles.emptyText, { color: theme.text }]}>
+          No career stats available
+        </Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <FieldBackdrop variant="subtle" />
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.borderSoft }]}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.headerTitle}>Career Stats</Text>
-            <Text style={styles.headerSubtitle}>{gameCount} games</Text>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>Career Stats</Text>
+            <Text style={[styles.headerSubtitle, { color: theme.muted }]}>
+              {gameCount} games
+            </Text>
           </View>
           <HomeButton color={tintColor} />
         </View>
+        <View style={[styles.headerRule, { backgroundColor: theme.tintSoft }]} />
       </View>
 
       <ScrollView
@@ -108,55 +97,63 @@ export default function CareerStatsScreen() {
         showsVerticalScrollIndicator={false}>
         {/* Regular Season */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Regular Season</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Regular Season</Text>
           <View style={styles.statsGrid}>
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Pass Yards"
-              total={stats.regular_season.pass_yds.total}
-              average={stats.regular_season.pass_yds.average}
-              games={stats.regular_season.pass_yds.games}
+              value={stats.regular_season.pass_yds.total.toFixed(1)}
+              subLabel={`${stats.regular_season.pass_yds.average.toFixed(1)}/game`}
+              stripeColor={theme.accent2}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Pass TDs"
-              total={stats.regular_season.pass_td.total}
-              average={stats.regular_season.pass_td.average}
-              games={stats.regular_season.pass_td.games}
+              value={stats.regular_season.pass_td.total.toFixed(1)}
+              subLabel={`${stats.regular_season.pass_td.average.toFixed(1)}/game`}
+              stripeColor={theme.accent2}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Interceptions"
-              total={stats.regular_season.pass_int.total}
-              average={stats.regular_season.pass_int.average}
-              games={stats.regular_season.pass_int.games}
+              value={stats.regular_season.pass_int.total.toFixed(1)}
+              subLabel={`${stats.regular_season.pass_int.average.toFixed(1)}/game`}
+              stripeColor={theme.danger}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Completions"
-              total={stats.regular_season.pass_cmp.total}
-              average={stats.regular_season.pass_cmp.average}
-              games={stats.regular_season.pass_cmp.games}
+              value={stats.regular_season.pass_cmp.total.toFixed(1)}
+              subLabel={`${stats.regular_season.pass_cmp.average.toFixed(1)}/game`}
+              stripeColor={theme.accent2}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Attempts"
-              total={stats.regular_season.pass_att.total}
-              average={stats.regular_season.pass_att.average}
-              games={stats.regular_season.pass_att.games}
+              value={stats.regular_season.pass_att.total.toFixed(1)}
+              subLabel={`${stats.regular_season.pass_att.average.toFixed(1)}/game`}
+              stripeColor={theme.accent2}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Rush Yards"
-              total={stats.regular_season.rush_yds.total}
-              average={stats.regular_season.rush_yds.average}
-              games={stats.regular_season.rush_yds.games}
+              value={stats.regular_season.rush_yds.total.toFixed(1)}
+              subLabel={`${stats.regular_season.rush_yds.average.toFixed(1)}/game`}
+              stripeColor={theme.tint}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Rush Attempts"
-              total={stats.regular_season.rush_att.total}
-              average={stats.regular_season.rush_att.average}
-              games={stats.regular_season.rush_att.games}
+              value={stats.regular_season.rush_att.total.toFixed(1)}
+              subLabel={`${stats.regular_season.rush_att.average.toFixed(1)}/game`}
+              stripeColor={theme.tint}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Rush TDs"
-              total={stats.regular_season.rush_td.total}
-              average={stats.regular_season.rush_td.average}
-              games={stats.regular_season.rush_td.games}
+              value={stats.regular_season.rush_td.total.toFixed(1)}
+              subLabel={`${stats.regular_season.rush_td.average.toFixed(1)}/game`}
+              stripeColor={theme.tint}
             />
           </View>
         </View>
@@ -164,55 +161,63 @@ export default function CareerStatsScreen() {
         {/* Postseason */}
         {stats.postseason.pass_yds.games > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Postseason</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Postseason</Text>
             <View style={styles.statsGrid}>
-              <StatDisplay
+              <StatTile
+                style={styles.statTile}
                 label="Pass Yards"
-                total={stats.postseason.pass_yds.total}
-                average={stats.postseason.pass_yds.average}
-                games={stats.postseason.pass_yds.games}
+                value={stats.postseason.pass_yds.total.toFixed(1)}
+                subLabel={`${stats.postseason.pass_yds.average.toFixed(1)}/game`}
+                stripeColor={theme.accent2}
               />
-              <StatDisplay
+              <StatTile
+                style={styles.statTile}
                 label="Pass TDs"
-                total={stats.postseason.pass_td.total}
-                average={stats.postseason.pass_td.average}
-                games={stats.postseason.pass_td.games}
+                value={stats.postseason.pass_td.total.toFixed(1)}
+                subLabel={`${stats.postseason.pass_td.average.toFixed(1)}/game`}
+                stripeColor={theme.accent2}
               />
-              <StatDisplay
+              <StatTile
+                style={styles.statTile}
                 label="Interceptions"
-                total={stats.postseason.pass_int.total}
-                average={stats.postseason.pass_int.average}
-                games={stats.postseason.pass_int.games}
+                value={stats.postseason.pass_int.total.toFixed(1)}
+                subLabel={`${stats.postseason.pass_int.average.toFixed(1)}/game`}
+                stripeColor={theme.danger}
               />
-              <StatDisplay
+              <StatTile
+                style={styles.statTile}
                 label="Completions"
-                total={stats.postseason.pass_cmp.total}
-                average={stats.postseason.pass_cmp.average}
-                games={stats.postseason.pass_cmp.games}
+                value={stats.postseason.pass_cmp.total.toFixed(1)}
+                subLabel={`${stats.postseason.pass_cmp.average.toFixed(1)}/game`}
+                stripeColor={theme.accent2}
               />
-              <StatDisplay
+              <StatTile
+                style={styles.statTile}
                 label="Attempts"
-                total={stats.postseason.pass_att.total}
-                average={stats.postseason.pass_att.average}
-                games={stats.postseason.pass_att.games}
+                value={stats.postseason.pass_att.total.toFixed(1)}
+                subLabel={`${stats.postseason.pass_att.average.toFixed(1)}/game`}
+                stripeColor={theme.accent2}
               />
-              <StatDisplay
+              <StatTile
+                style={styles.statTile}
                 label="Rush Yards"
-                total={stats.postseason.rush_yds.total}
-                average={stats.postseason.rush_yds.average}
-                games={stats.postseason.rush_yds.games}
+                value={stats.postseason.rush_yds.total.toFixed(1)}
+                subLabel={`${stats.postseason.rush_yds.average.toFixed(1)}/game`}
+                stripeColor={theme.tint}
               />
-              <StatDisplay
+              <StatTile
+                style={styles.statTile}
                 label="Rush Attempts"
-                total={stats.postseason.rush_att.total}
-                average={stats.postseason.rush_att.average}
-                games={stats.postseason.rush_att.games}
+                value={stats.postseason.rush_att.total.toFixed(1)}
+                subLabel={`${stats.postseason.rush_att.average.toFixed(1)}/game`}
+                stripeColor={theme.tint}
               />
-              <StatDisplay
+              <StatTile
+                style={styles.statTile}
                 label="Rush TDs"
-                total={stats.postseason.rush_td.total}
-                average={stats.postseason.rush_td.average}
-                games={stats.postseason.rush_td.games}
+                value={stats.postseason.rush_td.total.toFixed(1)}
+                subLabel={`${stats.postseason.rush_td.average.toFixed(1)}/game`}
+                stripeColor={theme.tint}
               />
             </View>
           </View>
@@ -220,55 +225,63 @@ export default function CareerStatsScreen() {
 
         {/* Combined */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Combined</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Combined</Text>
           <View style={styles.statsGrid}>
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Pass Yards"
-              total={stats.combined.pass_yds.total}
-              average={stats.combined.pass_yds.average}
-              games={stats.combined.pass_yds.games}
+              value={stats.combined.pass_yds.total.toFixed(1)}
+              subLabel={`${stats.combined.pass_yds.average.toFixed(1)}/game`}
+              stripeColor={theme.accent2}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Pass TDs"
-              total={stats.combined.pass_td.total}
-              average={stats.combined.pass_td.average}
-              games={stats.combined.pass_td.games}
+              value={stats.combined.pass_td.total.toFixed(1)}
+              subLabel={`${stats.combined.pass_td.average.toFixed(1)}/game`}
+              stripeColor={theme.accent2}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Interceptions"
-              total={stats.combined.pass_int.total}
-              average={stats.combined.pass_int.average}
-              games={stats.combined.pass_int.games}
+              value={stats.combined.pass_int.total.toFixed(1)}
+              subLabel={`${stats.combined.pass_int.average.toFixed(1)}/game`}
+              stripeColor={theme.danger}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Completions"
-              total={stats.combined.pass_cmp.total}
-              average={stats.combined.pass_cmp.average}
-              games={stats.combined.pass_cmp.games}
+              value={stats.combined.pass_cmp.total.toFixed(1)}
+              subLabel={`${stats.combined.pass_cmp.average.toFixed(1)}/game`}
+              stripeColor={theme.accent2}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Attempts"
-              total={stats.combined.pass_att.total}
-              average={stats.combined.pass_att.average}
-              games={stats.combined.pass_att.games}
+              value={stats.combined.pass_att.total.toFixed(1)}
+              subLabel={`${stats.combined.pass_att.average.toFixed(1)}/game`}
+              stripeColor={theme.accent2}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Rush Yards"
-              total={stats.combined.rush_yds.total}
-              average={stats.combined.rush_yds.average}
-              games={stats.combined.rush_yds.games}
+              value={stats.combined.rush_yds.total.toFixed(1)}
+              subLabel={`${stats.combined.rush_yds.average.toFixed(1)}/game`}
+              stripeColor={theme.tint}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Rush Attempts"
-              total={stats.combined.rush_att.total}
-              average={stats.combined.rush_att.average}
-              games={stats.combined.rush_att.games}
+              value={stats.combined.rush_att.total.toFixed(1)}
+              subLabel={`${stats.combined.rush_att.average.toFixed(1)}/game`}
+              stripeColor={theme.tint}
             />
-            <StatDisplay
+            <StatTile
+              style={styles.statTile}
               label="Rush TDs"
-              total={stats.combined.rush_td.total}
-              average={stats.combined.rush_td.average}
-              games={stats.combined.rush_td.games}
+              value={stats.combined.rush_td.total.toFixed(1)}
+              subLabel={`${stats.combined.rush_td.average.toFixed(1)}/game`}
+              stripeColor={theme.tint}
             />
           </View>
         </View>
@@ -292,7 +305,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   headerRow: {
     flexDirection: 'row',
@@ -301,12 +313,18 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
     marginBottom: 4,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
   headerSubtitle: {
     fontSize: 13,
-    opacity: 0.6,
+  },
+  headerRule: {
+    height: 2,
+    width: 56,
+    borderRadius: 2,
+    marginTop: 8,
   },
   content: {
     flex: 1,
@@ -317,35 +335,17 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
     marginBottom: 12,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.3,
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
   },
-  statBox: {
+  statTile: {
     width: '48%',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  statBoxLabel: {
-    fontSize: 12,
-    opacity: 0.6,
-    marginBottom: 6,
-  },
-  statBoxValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  statBoxAverage: {
-    fontSize: 11,
-    opacity: 0.5,
   },
   emptyText: {
     fontSize: 16,

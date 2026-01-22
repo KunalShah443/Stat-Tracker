@@ -32,8 +32,8 @@ export const SeasonPicker: React.FC<SeasonPickerProps> = ({
   onSeasonChange,
 }) => {
   const colorScheme = useColorScheme();
-  const tintColor = Colors[colorScheme ?? 'light'].tint;
-  const modalBackground = colorScheme === 'dark' ? '#1a1a1a' : '#fff';
+  const theme = Colors[colorScheme ?? 'light'];
+  const tintColor = theme.tint;
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>('list');
@@ -137,10 +137,15 @@ export const SeasonPicker: React.FC<SeasonPickerProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.surface, borderBottomColor: theme.borderSoft },
+      ]}
+    >
       <View style={styles.seasonHeader}>
-        <Text style={styles.seasonLabel}>Season</Text>
-        <Text style={styles.seasonValue}>
+        <Text style={[styles.seasonLabel, { color: theme.muted }]}>Season</Text>
+        <Text style={[styles.seasonValue, { color: theme.text }]}>
           {selectedSeason
             ? `${selectedSeason.season_year} - ${selectedSeason.team_name}`
             : 'Not set'}
@@ -167,10 +172,17 @@ export const SeasonPicker: React.FC<SeasonPickerProps> = ({
         onRequestClose={closeModal}
       >
         <RNView style={styles.modalOverlay}>
-          <RNView style={[styles.modalContent, { backgroundColor: modalBackground }]}>
+          <RNView
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.surface, borderColor: theme.borderSoft },
+            ]}
+          >
             {modalMode === 'list' && (
               <>
-                <Text style={styles.modalTitle}>Select Season</Text>
+                <Text style={[styles.modalTitle, { color: theme.text }]}>
+                  Select Season
+                </Text>
                 <ScrollView style={styles.list}>
                   {seasons.map((season) => {
                     const isSelected = season.id === selectedSeasonId;
@@ -179,14 +191,21 @@ export const SeasonPicker: React.FC<SeasonPickerProps> = ({
                         key={season.id}
                         style={[
                           styles.listItem,
-                          isSelected && styles.listItemSelected,
+                          {
+                            borderColor: theme.borderSoft,
+                            backgroundColor: theme.surface2,
+                          },
+                          isSelected && {
+                            borderColor: theme.tint,
+                            backgroundColor: theme.tintSoft,
+                          },
                         ]}
                         onPress={() => handleSelectSeason(season)}
                       >
-                        <Text style={styles.listItemTitle}>
+                        <Text style={[styles.listItemTitle, { color: theme.text }]}>
                           {season.season_year}
                         </Text>
-                        <Text style={styles.listItemSubtitle}>
+                        <Text style={[styles.listItemSubtitle, { color: theme.muted }]}>
                           {season.team_name}
                         </Text>
                       </Pressable>
@@ -194,44 +213,57 @@ export const SeasonPicker: React.FC<SeasonPickerProps> = ({
                   })}
                 </ScrollView>
                 <Pressable style={styles.modalCloseButton} onPress={closeModal}>
-                  <Text style={styles.modalCloseText}>Close</Text>
+                  <Text style={[styles.modalCloseText, { color: theme.tint }]}>
+                    Close
+                  </Text>
                 </Pressable>
               </>
             )}
 
             {modalMode === 'create' && (
               <>
-                <Text style={styles.modalTitle}>Create Season</Text>
-                <Text style={styles.inputLabel}>Season Year</Text>
+                <Text style={[styles.modalTitle, { color: theme.text }]}>
+                  Create Season
+                </Text>
+                <Text style={[styles.inputLabel, { color: theme.muted }]}>
+                  Season Year
+                </Text>
                 <TextInput
                   style={[
                     styles.input,
                     {
-                      backgroundColor: colorScheme === 'dark' ? '#333' : '#f0f0f0',
-                      color: colorScheme === 'dark' ? '#fff' : '#000',
-                      borderColor: colorScheme === 'dark' ? '#555' : '#ddd',
+                      backgroundColor: theme.surface2,
+                      color: theme.text,
+                      borderColor: theme.borderSoft,
                     },
                   ]}
                   keyboardType="numeric"
                   value={yearInput}
                   onChangeText={setYearInput}
                 />
-                <Text style={styles.inputLabel}>Team Name</Text>
+                <Text style={[styles.inputLabel, { color: theme.muted }]}>
+                  Team Name
+                </Text>
                 <TextInput
                   style={[
                     styles.input,
                     {
-                      backgroundColor: colorScheme === 'dark' ? '#333' : '#f0f0f0',
-                      color: colorScheme === 'dark' ? '#fff' : '#000',
-                      borderColor: colorScheme === 'dark' ? '#555' : '#ddd',
+                      backgroundColor: theme.surface2,
+                      color: theme.text,
+                      borderColor: theme.borderSoft,
                     },
                   ]}
                   value={teamInput}
                   onChangeText={setTeamInput}
                 />
                 <View style={styles.modalButtonRow}>
-                  <Pressable style={styles.modalSecondaryButton} onPress={closeModal}>
-                    <Text style={styles.modalSecondaryText}>Cancel</Text>
+                  <Pressable
+                    style={[styles.modalSecondaryButton, { borderColor: theme.borderSoft }]}
+                    onPress={closeModal}
+                  >
+                    <Text style={[styles.modalSecondaryText, { color: theme.text }]}>
+                      Cancel
+                    </Text>
                   </Pressable>
                   <Pressable
                     style={[styles.modalPrimaryButton, { backgroundColor: tintColor }]}
@@ -245,23 +277,32 @@ export const SeasonPicker: React.FC<SeasonPickerProps> = ({
 
             {modalMode === 'edit' && (
               <>
-                <Text style={styles.modalTitle}>Edit Team</Text>
-                <Text style={styles.inputLabel}>Team Name</Text>
+                <Text style={[styles.modalTitle, { color: theme.text }]}>
+                  Edit Team
+                </Text>
+                <Text style={[styles.inputLabel, { color: theme.muted }]}>
+                  Team Name
+                </Text>
                 <TextInput
                   style={[
                     styles.input,
                     {
-                      backgroundColor: colorScheme === 'dark' ? '#333' : '#f0f0f0',
-                      color: colorScheme === 'dark' ? '#fff' : '#000',
-                      borderColor: colorScheme === 'dark' ? '#555' : '#ddd',
+                      backgroundColor: theme.surface2,
+                      color: theme.text,
+                      borderColor: theme.borderSoft,
                     },
                   ]}
                   value={teamInput}
                   onChangeText={setTeamInput}
                 />
                 <View style={styles.modalButtonRow}>
-                  <Pressable style={styles.modalSecondaryButton} onPress={closeModal}>
-                    <Text style={styles.modalSecondaryText}>Cancel</Text>
+                  <Pressable
+                    style={[styles.modalSecondaryButton, { borderColor: theme.borderSoft }]}
+                    onPress={closeModal}
+                  >
+                    <Text style={[styles.modalSecondaryText, { color: theme.text }]}>
+                      Cancel
+                    </Text>
                   </Pressable>
                   <Pressable
                     style={[styles.modalPrimaryButton, { backgroundColor: tintColor }]}
@@ -284,19 +325,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   seasonHeader: {
     marginBottom: 6,
   },
   seasonLabel: {
     fontSize: 12,
-    opacity: 0.6,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.6,
     marginBottom: 2,
   },
   seasonValue: {
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'SpaceMono',
   },
   actionsRow: {
     flexDirection: 'row',
@@ -308,23 +350,28 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 13,
     fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
     padding: 16,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     maxHeight: '80%',
+    borderWidth: 1,
+    borderBottomWidth: 0,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
   list: {
     marginBottom: 12,
@@ -334,20 +381,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
     marginBottom: 10,
-  },
-  listItemSelected: {
-    borderColor: '#4caf50',
-    backgroundColor: 'rgba(76, 175, 80, 0.05)',
   },
   listItemTitle: {
     fontSize: 15,
     fontWeight: '600',
+    fontFamily: 'SpaceMono',
   },
   listItemSubtitle: {
     fontSize: 12,
-    opacity: 0.6,
   },
   modalCloseButton: {
     alignSelf: 'flex-end',
@@ -356,15 +398,18 @@ const styles = StyleSheet.create({
   modalCloseText: {
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
   inputLabel: {
     fontSize: 12,
-    opacity: 0.7,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 10,
     fontSize: 14,
@@ -381,17 +426,20 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   modalPrimaryText: {
-    color: '#fff',
+    color: '#0B1220',
     fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
   modalSecondaryButton: {
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: '#ddd',
   },
   modalSecondaryText: {
     fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
 });

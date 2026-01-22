@@ -1,3 +1,4 @@
+import FieldBackdrop from '@/components/FieldBackdrop';
 import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -10,7 +11,7 @@ import {
 } from '@/src/types/stats';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View as RNView } from 'react-native';
 
 type StatMap = Record<QBStatKey, number>;
 
@@ -33,7 +34,8 @@ export default function GameLogDetailScreen() {
   const { id } = useLocalSearchParams<{ id?: string | string[] }>();
   const router = useRouter();
   const colorScheme = useColorScheme();
-  const tintColor = Colors[colorScheme ?? 'light'].tint;
+  const theme = Colors[colorScheme ?? 'light'];
+  const tintColor = theme.tint;
 
   const [game, setGame] = useState<Game | null>(null);
   const [statMap, setStatMap] = useState<StatMap | null>(null);
@@ -77,7 +79,8 @@ export default function GameLogDetailScreen() {
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" />
+        <FieldBackdrop variant="subtle" />
+        <ActivityIndicator size="large" color={tintColor} />
       </View>
     );
   }
@@ -85,9 +88,17 @@ export default function GameLogDetailScreen() {
   if (!game || !statMap) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.emptyText}>Game not found</Text>
+        <FieldBackdrop variant="subtle" />
+        <Text style={[styles.emptyText, { color: theme.text }]}>Game not found</Text>
         <Pressable
-          style={[styles.backButton, { borderColor: tintColor }]}
+          style={({ pressed }) => [
+            styles.backButton,
+            {
+              borderColor: tintColor,
+              backgroundColor: theme.surface2,
+            },
+            pressed && styles.backButtonPressed,
+          ]}
           onPress={() => router.replace('/(tabs)/game-logs')}
         >
           <Text style={[styles.backText, { color: tintColor }]}>Back to Logs</Text>
@@ -98,36 +109,41 @@ export default function GameLogDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <FieldBackdrop variant="subtle" />
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.borderSoft }]}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.headerTitle}>Game Details</Text>
-            {weekLabel && <Text style={styles.headerSubtitle}>{weekLabel}</Text>}
+            <Text style={[styles.headerTitle, { color: theme.text }]}>Game Details</Text>
+            {weekLabel && (
+              <Text style={[styles.headerSubtitle, { color: theme.muted }]}>{weekLabel}</Text>
+            )}
           </View>
           <HomeButton color={tintColor} />
         </View>
+        <View style={[styles.headerRule, { backgroundColor: theme.tintSoft }]} />
       </View>
 
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryTitle}>{game.opponent}</Text>
+      <View style={[styles.summaryCard, { backgroundColor: theme.surface, borderColor: theme.borderSoft }]}>
+        <RNView style={[styles.cardStripe, { backgroundColor: theme.accent2 }]} />
+        <Text style={[styles.summaryTitle, { color: theme.text }]}>{game.opponent}</Text>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Result</Text>
-          <Text style={styles.summaryValue}>{game.result || '-'}</Text>
+          <Text style={[styles.summaryLabel, { color: theme.muted }]}>Result</Text>
+          <Text style={[styles.summaryValue, { color: theme.text }]}>{game.result || '-'}</Text>
         </View>
         {weekLabel && (
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Week</Text>
-            <Text style={styles.summaryValue}>{weekLabel}</Text>
+            <Text style={[styles.summaryLabel, { color: theme.muted }]}>Week</Text>
+            <Text style={[styles.summaryValue, { color: theme.text }]}>{weekLabel}</Text>
           </View>
         )}
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Player Stats</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Player Stats</Text>
         {Object.entries(QB_STATS).map(([key, config]) => (
-          <View key={key} style={styles.statRow}>
-            <Text style={styles.statLabel}>{config.label}</Text>
-            <Text style={styles.statValue}>
+          <View key={key} style={[styles.statRow, { borderBottomColor: theme.borderSoft }]}>
+            <Text style={[styles.statLabel, { color: theme.muted }]}>{config.label}</Text>
+            <Text style={[styles.statValue, { color: theme.text }]}>
               {statMap[key as QBStatKey] ?? 0}
             </Text>
           </View>
@@ -135,7 +151,11 @@ export default function GameLogDetailScreen() {
       </View>
 
       <Pressable
-        style={[styles.backButton, { borderColor: tintColor }]}
+        style={({ pressed }) => [
+          styles.backButton,
+          { borderColor: tintColor, backgroundColor: theme.surface2 },
+          pressed && styles.backButtonPressed,
+        ]}
         onPress={() => router.replace('/(tabs)/game-logs')}
       >
         <Text style={[styles.backText, { color: tintColor }]}>Back to Logs</Text>
@@ -159,7 +179,6 @@ const styles = StyleSheet.create({
   header: {
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   headerRow: {
     flexDirection: 'row',
@@ -168,23 +187,38 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
   headerSubtitle: {
     fontSize: 13,
-    opacity: 0.6,
     marginTop: 4,
+  },
+  headerRule: {
+    height: 2,
+    width: 56,
+    borderRadius: 2,
+    marginTop: 8,
   },
   summaryCard: {
     marginTop: 16,
     padding: 14,
-    borderRadius: 10,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    overflow: 'hidden',
+  },
+  cardStripe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 72,
+    height: 3,
+    borderBottomRightRadius: 12,
   },
   summaryTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
     marginBottom: 10,
   },
   summaryRow: {
@@ -194,11 +228,11 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontSize: 13,
-    opacity: 0.6,
   },
   summaryValue: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
   },
   section: {
     marginTop: 20,
@@ -206,7 +240,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.3,
     marginBottom: 10,
   },
   statRow: {
@@ -214,29 +249,35 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   statLabel: {
     fontSize: 13,
   },
   statValue: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
   },
   backButton: {
     alignSelf: 'center',
     marginTop: 12,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 999,
     borderWidth: 1,
+  },
+  backButtonPressed: {
+    transform: [{ translateY: 1 }],
+    opacity: 0.9,
   },
   backText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.4,
   },
   emptyText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
   },
 });
