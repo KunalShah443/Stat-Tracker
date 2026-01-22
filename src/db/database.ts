@@ -54,6 +54,14 @@ export interface GameStat {
   stat_value: number;
 }
 
+export interface Achievement {
+  id: string;
+  profile_id: string;
+  type: string;
+  year: number;
+  created_at: string;
+}
+
 export const setActiveProfileId = async (
   profileId: string | null
 ): Promise<void> => {
@@ -421,5 +429,57 @@ export const getStatsForSeason = async (
        WHERE g.season_id = ? AND gs.stat_key = ?`,
       [seasonId, statKey]
     )) || []
+  );
+};
+
+// Achievement operations
+export const createAchievement = async (
+  profileId: string,
+  type: string,
+  year: number
+): Promise<Achievement> => {
+  const database = await getDatabase();
+  const id = `ach_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  const now = new Date().toISOString();
+
+  await database.runAsync(
+    'INSERT OR IGNORE INTO achievements (id, profile_id, type, year, created_at) VALUES (?, ?, ?, ?, ?)',
+    [id, profileId, type, year, now]
+  );
+
+  const row = await database.getFirstAsync<Achievement>(
+    'SELECT * FROM achievements WHERE profile_id = ? AND type = ? AND year = ?',
+    [profileId, type, year]
+  );
+
+  if (!row) {
+    // Should not happen, but makes failures explicit.
+    throw new Error('Failed to create achievement');
+  }
+
+  return row;
+};
+
+export const getAchievementsByProfile = async (
+  profileId: string
+): Promise<Achievement[]> => {
+  const database = await getDatabase();
+  return (
+    (await database.getAllAsync<Achievement>(
+      'SELECT * FROM achievements WHERE profile_id = ? ORDER BY year ASC, created_at ASC',
+      [profileId]
+    )) || []
+  );
+};
+
+export const deleteAchievement = async (
+  profileId: string,
+  type: string,
+  year: number
+): Promise<void> => {
+  const database = await getDatabase();
+  await database.runAsync(
+    'DELETE FROM achievements WHERE profile_id = ? AND type = ? AND year = ?',
+    [profileId, type, year]
   );
 };

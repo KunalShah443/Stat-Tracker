@@ -24,6 +24,24 @@ async function migrateDb(database: SQLiteDatabase, fromVersion: number) {
     await database.execAsync('ALTER TABLE profiles ADD COLUMN team_name TEXT');
     version = 2;
   }
+
+  if (version < 3) {
+    // v3 introduces user-entered achievements (awards + league leaders).
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS achievements (
+        id TEXT PRIMARY KEY NOT NULL,
+        profile_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY(profile_id) REFERENCES profiles(id) ON DELETE CASCADE,
+        UNIQUE(profile_id, type, year)
+      );
+      CREATE INDEX IF NOT EXISTS idx_achievements_profile_id ON achievements(profile_id);
+      CREATE INDEX IF NOT EXISTS idx_achievements_profile_type_year ON achievements(profile_id, type, year);
+    `);
+    version = 3;
+  }
 }
 
 /**

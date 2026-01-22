@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /**
  * Notes:
@@ -59,8 +59,21 @@ CREATE TABLE IF NOT EXISTS game_stats (
   FOREIGN KEY(game_id) REFERENCES games(id) ON DELETE CASCADE
 );
 
+-- User-entered achievements (awards + league leaders), stored by year.
+CREATE TABLE IF NOT EXISTS achievements (
+  id TEXT PRIMARY KEY NOT NULL,
+  profile_id TEXT NOT NULL,
+  type TEXT NOT NULL,           -- e.g. "award_mvp", "leader_pass_yds"
+  year INTEGER NOT NULL,        -- e.g. 2026
+  created_at TEXT NOT NULL,
+  FOREIGN KEY(profile_id) REFERENCES profiles(id) ON DELETE CASCADE,
+  UNIQUE(profile_id, type, year)
+);
+
 CREATE INDEX IF NOT EXISTS idx_seasons_profile_id ON seasons(profile_id);
 CREATE INDEX IF NOT EXISTS idx_games_season_id ON games(season_id);
 CREATE INDEX IF NOT EXISTS idx_game_stats_game_id ON game_stats(game_id);
 CREATE INDEX IF NOT EXISTS idx_game_stats_stat_key ON game_stats(stat_key);
+CREATE INDEX IF NOT EXISTS idx_achievements_profile_id ON achievements(profile_id);
+CREATE INDEX IF NOT EXISTS idx_achievements_profile_type_year ON achievements(profile_id, type, year);
 `;
