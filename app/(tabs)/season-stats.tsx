@@ -169,10 +169,16 @@ export default function SeasonStatsScreen() {
         </View>
 
         {/* Postseason */}
-        {stats.postseason.pass_yds.games > 0 && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Postseason</Text>
-            <View style={styles.statsGrid}>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>
+            Postseason ({stats.postseason.pass_yds.games} games)
+          </Text>
+          {stats.postseason.pass_yds.games === 0 ? (
+            <Text style={[styles.sectionHint, { color: theme.muted }]}>
+              No postseason games logged yet.
+            </Text>
+          ) : null}
+          <View style={styles.statsGrid}>
               <StatTile
                 style={styles.statTile}
                 label="Pass Yards"
@@ -229,9 +235,8 @@ export default function SeasonStatsScreen() {
                 subLabel={`${stats.postseason.rush_td.average.toFixed(1)}/game`}
                 stripeColor={theme.tint}
               />
-            </View>
           </View>
-        )}
+        </View>
 
         {/* Combined */}
         <View style={styles.section}>
@@ -348,6 +353,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontFamily: 'SpaceMono',
     letterSpacing: 0.3,
+  },
+  sectionHint: {
+    fontSize: 12,
+    marginBottom: 12,
   },
   statsGrid: {
     flexDirection: 'row',
