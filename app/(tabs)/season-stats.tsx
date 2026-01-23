@@ -10,7 +10,7 @@ import {
   getOrCreateDefaultProfile,
   Profile,
   Season,
-} from '@/src/db/database';
+} from '@/src/db/supabaseDatabase';
 import { getSeasonStats, SeasonStats } from '@/src/db/queries';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';

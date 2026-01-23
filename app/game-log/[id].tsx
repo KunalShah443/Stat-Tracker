@@ -3,7 +3,7 @@ import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { Game, GameStat, getGame, getGameStats } from '@/src/db/database';
+import { Game, GameStat, getGame, getGameStats } from '@/src/db/supabaseDatabase';
 import {
   getPostseasonRoundLabel,
   QB_STATS,

@@ -11,7 +11,7 @@ import {
   getGameStats,
   setGameStat,
   updateGame,
-} from '@/src/db/database';
+} from '@/src/db/supabaseDatabase';
 import { showAlert } from '@/src/utils/alerts';
 import { DEFAULT_GAME_FORM_DATA, GameFormData, QB_STATS, QBStatKey } from '@/src/types/stats';
 import { useLocalSearchParams, useRouter } from 'expo-router';

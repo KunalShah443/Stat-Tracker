@@ -4,7 +4,7 @@ import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { getOrCreateCurrentSeason, getOrCreateDefaultProfile } from '@/src/db/database';
+import { getOrCreateCurrentSeason, getOrCreateDefaultProfile } from '@/src/db/supabaseDatabase';
 import { getMilestones, getStreaks } from '@/src/db/queries';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';

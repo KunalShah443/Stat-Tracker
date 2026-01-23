@@ -6,7 +6,7 @@ import {
   getSeasonsByProfile,
   Season,
   updateSeason,
-} from '@/src/db/database';
+} from '@/src/db/supabaseDatabase';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,

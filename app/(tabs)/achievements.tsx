@@ -12,7 +12,7 @@ import {
   getSeasonsByProfile,
   Profile,
   Season,
-} from '@/src/db/database';
+} from '@/src/db/supabaseDatabase';
 import { showAlert, showConfirm } from '@/src/utils/alerts';
 import { QB_STATS, QBStatKey } from '@/src/types/stats';
 import { useFocusEffect } from '@react-navigation/native';

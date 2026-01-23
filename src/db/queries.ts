@@ -4,7 +4,7 @@ import {
     getGameStats,
     getSeason,
     getSeasonsByProfile
-} from './database';
+} from './supabaseDatabase';
 
 export interface StatAggregate {
   total: number;

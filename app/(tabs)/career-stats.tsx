@@ -8,7 +8,7 @@ import {
   getGamesBySeason,
   getOrCreateDefaultProfile,
   getSeasonsByProfile,
-} from '@/src/db/database';
+} from '@/src/db/supabaseDatabase';
 import { getCareerStats } from '@/src/db/queries';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';

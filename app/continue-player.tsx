@@ -8,7 +8,7 @@ import {
   getAllProfiles,
   Profile,
   setActiveProfileId,
-} from '@/src/db/database';
+} from '@/src/db/supabaseDatabase';
 import { showConfirm } from '@/src/utils/alerts';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';

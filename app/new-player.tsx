@@ -3,7 +3,7 @@ import HomeButton from '@/components/HomeButton';
 import { Text, View } from '@/components/Themed';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
-import { createProfile } from '@/src/db/database';
+import { createProfile } from '@/src/db/supabaseDatabase';
 import { showAlert } from '@/src/utils/alerts';
 import { router } from 'expo-router';
 import React, { useState } from 'react';

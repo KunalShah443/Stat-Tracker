@@ -11,7 +11,7 @@ import {
   getOrCreateDefaultProfile,
   Profile,
   Season,
-} from '@/src/db/database';
+} from '@/src/db/supabaseDatabase';
 import { getPostseasonRoundLabel } from '@/src/types/stats';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';

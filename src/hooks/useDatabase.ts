@@ -16,7 +16,7 @@ import {
   Season,
   setGameStat,
   updateGame,
-} from '@/src/db/database';
+} from '@/src/db/supabaseDatabase';
 import {
   CareerStats,
   getCareerStats,
