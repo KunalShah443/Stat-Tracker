@@ -7,6 +7,7 @@ import { QBStatForm } from '@/src/components/QBStatForm';
 import { SeasonPicker } from '@/src/components/SeasonPicker';
 import { useGame, useProfile, useSeason } from '@/src/hooks/useDatabase';
 import { DEFAULT_GAME_FORM_DATA, GameFormData } from '@/src/types/stats';
+import { showAlert } from '@/src/utils/alerts';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
 
@@ -71,15 +72,12 @@ export default function AddGameScreen() {
         await setStat(game.id, key, value);
       }
 
-      Alert.alert('Success', 'Game saved successfully!', [
-        {
-          text: 'OK',
-          onPress: () => {
-            // Reset form
-            setFormData(DEFAULT_GAME_FORM_DATA);
-          },
-        },
-      ]);
+      // Reset immediately so web (and native) both clear the form for the next log.
+      setFormData({
+        ...DEFAULT_GAME_FORM_DATA,
+        gameDate: new Date().toISOString().split('T')[0],
+      });
+      showAlert('Success', 'Game saved successfully!');
     } catch (error) {
       Alert.alert('Error', 'Failed to save game. Please try again.');
       console.error(error);
