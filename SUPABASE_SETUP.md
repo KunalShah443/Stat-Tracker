@@ -11,10 +11,10 @@ This app can use Supabase as the source of truth for profiles/seasons/games/stat
 
 ## 2) Create tables
 
-Run this SQL in the Supabase SQL editor:
+Copy/paste this entire SQL script into the Supabase SQL editor. It's safe to run multiple times (it will create missing tables/columns/indexes and re-apply permissions):
 
 ```sql
--- Core tables (compatible with the app's current data model)
+-- Stat-Tracker full schema (safe to re-run)
 
 create table if not exists public.meta (
   key text primary key,
@@ -71,30 +71,23 @@ create table if not exists public.achievements (
   unique (profile_id, type, year)
 );
 
+-- Catch-up migrations for older installs (idempotent).
+alter table public.games
+  add column if not exists is_postseason integer not null default 0,
+  add column if not exists is_home integer not null default 1,
+  add column if not exists team_score integer,
+  add column if not exists opponent_score integer,
+  add column if not exists note text;
+
 create index if not exists idx_seasons_profile_id on public.seasons(profile_id);
 create index if not exists idx_games_season_id on public.games(season_id);
 create index if not exists idx_game_stats_game_id on public.game_stats(game_id);
 create index if not exists idx_game_stats_stat_key on public.game_stats(stat_key);
 create index if not exists idx_achievements_profile_id on public.achievements(profile_id);
-create index if not exists idx_achievements_profile_type_year on public.achievements(profile_id, type, year);
-```
+create unique index if not exists uidx_achievements_profile_type_year
+  on public.achievements(profile_id, type, year);
 
-If you already created the tables, add the new `is_home` column with:
-
-```sql
-alter table public.games
-add column if not exists is_home integer not null default 1;
-```
-
-## 3) Lock down access (recommended)
-
-Since this is private, the easiest secure setup is:
-- no public sign-ups
-- only the `authenticated` role can read/write tables
-
-Run:
-
-```sql
+-- Lock down access (recommended for private use)
 revoke all on table public.meta from anon;
 revoke all on table public.profiles from anon;
 revoke all on table public.seasons from anon;
@@ -108,9 +101,12 @@ grant all on table public.seasons to authenticated;
 grant all on table public.games to authenticated;
 grant all on table public.game_stats to authenticated;
 grant all on table public.achievements to authenticated;
+
+-- Supabase/PostgREST caches schema; reload it so new columns are visible immediately.
+notify pgrst, 'reload schema';
 ```
 
-## 4) Configure environment variables
+## 3) Configure environment variables
 
 Create a local `.env` (not committed) and add:
 
@@ -121,7 +117,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 
 On Vercel, add the same variables in **Project Settings -> Environment Variables** (Production + Preview).
 
-## 5) Use the app
+## 4) Use the app
 
 - Open the site
 - Sign in on the home screen

@@ -123,7 +123,10 @@ export default function EditGameScreen() {
       router.back();
     } catch (error) {
       console.error(error);
-      showAlert('Error', 'Failed to save changes. Try again.');
+      const message =
+        (error as { message?: string } | null)?.message ??
+        String(error ?? 'Unknown error');
+      showAlert('Error', `Failed to save changes.\n\n${message}`);
     } finally {
       setIsSaving(false);
     }
