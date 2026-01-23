@@ -80,6 +80,14 @@ export default function GameLogDetailScreen() {
     return null;
   }, [game]);
 
+  const scoreLabel = useMemo(() => {
+    if (!game) return null;
+    if (game.team_score === null && game.opponent_score === null) return null;
+    const team = game.team_score ?? '-';
+    const opp = game.opponent_score ?? '-';
+    return `${team}-${opp}`;
+  }, [game]);
+
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
@@ -124,9 +132,7 @@ export default function GameLogDetailScreen() {
           </View>
           <RNView style={styles.headerActions}>
             <Pressable
-              onPress={() =>
-                router.push({ pathname: '/edit-game/[id]', params: { id: game.id } })
-              }
+              onPress={() => router.push((`/edit-game/${game.id}` as any))}
               style={({ pressed }) => [
                 styles.editButton,
                 { backgroundColor: theme.surface2, borderColor: theme.accent2 },
@@ -148,6 +154,12 @@ export default function GameLogDetailScreen() {
           <Text style={[styles.summaryLabel, { color: theme.muted }]}>Result</Text>
           <Text style={[styles.summaryValue, { color: theme.text }]}>{game.result || '-'}</Text>
         </View>
+        {scoreLabel && (
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: theme.muted }]}>Score</Text>
+            <Text style={[styles.summaryValue, { color: theme.text }]}>{scoreLabel}</Text>
+          </View>
+        )}
         {weekLabel && (
           <View style={styles.summaryRow}>
             <Text style={[styles.summaryLabel, { color: theme.muted }]}>Week</Text>
@@ -155,6 +167,14 @@ export default function GameLogDetailScreen() {
           </View>
         )}
       </View>
+
+      {game.note ? (
+        <View style={[styles.noteCard, { backgroundColor: theme.surface, borderColor: theme.borderSoft }]}>
+          <RNView style={[styles.cardStripe, { backgroundColor: theme.tint }]} />
+          <Text style={[styles.noteTitle, { color: theme.text }]}>Notes</Text>
+          <Text style={[styles.noteText, { color: theme.text }]}>{game.note}</Text>
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Player Stats</Text>
@@ -246,6 +266,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
   },
+  noteCard: {
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
   cardStripe: {
     position: 'absolute',
     top: 0,
@@ -272,6 +299,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'SpaceMono',
     letterSpacing: 0.2,
+  },
+  noteTitle: {
+    fontSize: 16,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 0.2,
+    marginBottom: 8,
+  },
+  noteText: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   section: {
     marginTop: 20,

@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 /**
  * Notes:
@@ -46,6 +46,9 @@ CREATE TABLE IF NOT EXISTS games (
   week INTEGER,                 -- optional
   is_postseason INTEGER NOT NULL DEFAULT 0, -- 0/1
   result TEXT,                  -- "W" | "L" | "T" | null
+  team_score INTEGER,           -- optional (your team)
+  opponent_score INTEGER,       -- optional
+  note TEXT,                    -- optional freeform notes
   created_at TEXT NOT NULL,
   FOREIGN KEY(season_id) REFERENCES seasons(id) ON DELETE CASCADE
 );

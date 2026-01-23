@@ -28,6 +28,9 @@ export interface GameFormData {
   week?: number;
   isPostseason: boolean;
   result?: 'W' | 'L' | 'T';
+  teamScore?: number;
+  opponentScore?: number;
+  note: string;
   stats: Record<QBStatKey, number>;
 }
 
@@ -37,6 +40,9 @@ export const DEFAULT_GAME_FORM_DATA: GameFormData = {
   week: undefined,
   isPostseason: false,
   result: undefined,
+  teamScore: undefined,
+  opponentScore: undefined,
+  note: '',
   stats: {
     pass_cmp: 0,
     pass_att: 0,

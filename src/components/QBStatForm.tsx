@@ -40,6 +40,14 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
     });
   };
 
+  const toOptionalScore = (value: string): number | undefined => {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    const num = parseInt(trimmed, 10);
+    if (!Number.isFinite(num)) return undefined;
+    return Math.max(0, num);
+  };
+
   const updateStat = (statKey: QBStatKey, value: string) => {
     const numValue = value === '' ? 0 : parseFloat(value);
     if (isNaN(numValue)) return;
@@ -247,6 +255,70 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
             </Pressable>
           </View>
         </View>
+
+        <View style={styles.row}>
+          <View style={[styles.formGroup, { flex: 1 }]}>
+            <Text style={[styles.label, { color: theme.muted }]}>Your Score (Optional)</Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: inputBackground,
+                  color: inputText,
+                  borderColor: inputBorder,
+                },
+              ]}
+              placeholder="0"
+              placeholderTextColor={placeholderText}
+              keyboardType="numeric"
+              value={formData.teamScore?.toString() ?? ''}
+              onChangeText={(text) => updateBasicField('teamScore', toOptionalScore(text))}
+            />
+          </View>
+
+          <View style={[styles.formGroup, { flex: 1, marginLeft: 10 }]}>
+            <Text style={[styles.label, { color: theme.muted }]}>
+              Opponent Score (Optional)
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: inputBackground,
+                  color: inputText,
+                  borderColor: inputBorder,
+                },
+              ]}
+              placeholder="0"
+              placeholderTextColor={placeholderText}
+              keyboardType="numeric"
+              value={formData.opponentScore?.toString() ?? ''}
+              onChangeText={(text) =>
+                updateBasicField('opponentScore', toOptionalScore(text))
+              }
+            />
+          </View>
+        </View>
+
+        <View style={styles.formGroup}>
+          <Text style={[styles.label, { color: theme.muted }]}>Notes (Optional)</Text>
+          <TextInput
+            style={[
+              styles.input,
+              styles.notesInput,
+              {
+                backgroundColor: inputBackground,
+                color: inputText,
+                borderColor: inputBorder,
+              },
+            ]}
+            placeholder="Add a quick note about this game..."
+            placeholderTextColor={placeholderText}
+            multiline
+            value={formData.note}
+            onChangeText={(text) => updateBasicField('note', text)}
+          />
+        </View>
       </View>
 
       {/* QB Stats */}
@@ -345,6 +417,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     fontSize: 14,
+  },
+  notesInput: {
+    minHeight: 96,
+    textAlignVertical: 'top',
   },
   dropdownInput: {
     justifyContent: 'center',

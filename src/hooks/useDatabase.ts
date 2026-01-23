@@ -158,9 +158,22 @@ export const useGame = () => {
       opponent: string,
       isPostseason?: boolean,
       week?: number,
-      result?: string
+      result?: string,
+      teamScore?: number,
+      opponentScore?: number,
+      note?: string
     ) => {
-      const g = await createGame(seasonId, gameDate, opponent, isPostseason, week, result);
+      const g = await createGame(
+        seasonId,
+        gameDate,
+        opponent,
+        isPostseason,
+        week,
+        result,
+        teamScore,
+        opponentScore,
+        note
+      );
       setGame(g);
       setGameStats([]);
       return g;

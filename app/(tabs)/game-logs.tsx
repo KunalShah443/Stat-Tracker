@@ -29,6 +29,9 @@ interface GameWithStats {
   week: number | null;
   isPostseason: number;
   result: string | null;
+  teamScore: number | null;
+  opponentScore: number | null;
+  hasNote: boolean;
   passYds: number;
   passTD: number;
 }
@@ -99,6 +102,9 @@ export default function GameLogsScreen() {
             week: game.week,
             isPostseason: game.is_postseason,
             result: game.result,
+            teamScore: game.team_score,
+            opponentScore: game.opponent_score,
+            hasNote: Boolean(game.note && game.note.trim()),
             passYds,
             passTD,
           };
@@ -127,6 +133,10 @@ export default function GameLogsScreen() {
 
   const renderGameItem = ({ item }: { item: GameWithStats }) => {
     const weekLabel = formatWeekLabel(item);
+    const scoreLabel =
+      item.teamScore === null && item.opponentScore === null
+        ? null
+        : `Score ${item.teamScore ?? '-'}-${item.opponentScore ?? '-'}`;
 
     return (
       <Pressable
@@ -160,6 +170,12 @@ export default function GameLogsScreen() {
           <Text style={styles.opponent}>{item.opponent}</Text>
           {weekLabel && (
             <Text style={[styles.dateText, { color: theme.muted }]}>{weekLabel}</Text>
+          )}
+          {scoreLabel && (
+            <Text style={[styles.dateText, { color: theme.muted }]}>{scoreLabel}</Text>
+          )}
+          {!scoreLabel && item.hasNote && (
+            <Text style={[styles.dateText, { color: theme.muted }]}>Note added</Text>
           )}
         </View>
 

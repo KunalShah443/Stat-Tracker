@@ -60,7 +60,10 @@ export default function AddGameScreen() {
         formData.opponent,
         formData.isPostseason,
         formData.week,
-        formData.result
+        formData.result,
+        formData.teamScore,
+        formData.opponentScore,
+        formData.note
       );
 
       // Set all stats

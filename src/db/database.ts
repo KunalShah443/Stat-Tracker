@@ -44,6 +44,9 @@ export interface Game {
   week: number | null;
   is_postseason: number;
   result: string | null;
+  team_score: number | null;
+  opponent_score: number | null;
+  note: string | null;
   created_at: string;
 }
 
@@ -267,15 +270,31 @@ export const createGame = async (
   opponent: string,
   isPostseason: boolean = false,
   week?: number,
-  result?: string
+  result?: string,
+  teamScore?: number,
+  opponentScore?: number,
+  note?: string
 ): Promise<Game> => {
   const database = await getDatabase();
   const id = `game_${Date.now()}`;
   const now = new Date().toISOString();
+  const normalizedNote = note?.trim() ? note.trim() : null;
 
   await database.runAsync(
-    'INSERT INTO games (id, season_id, game_date, opponent, week, is_postseason, result, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, seasonId, gameDate, opponent, week || null, isPostseason ? 1 : 0, result || null, now]
+    'INSERT INTO games (id, season_id, game_date, opponent, week, is_postseason, result, team_score, opponent_score, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [
+      id,
+      seasonId,
+      gameDate,
+      opponent,
+      week || null,
+      isPostseason ? 1 : 0,
+      result || null,
+      teamScore ?? null,
+      opponentScore ?? null,
+      normalizedNote,
+      now,
+    ]
   );
 
   return {
@@ -286,6 +305,9 @@ export const createGame = async (
     week: week || null,
     is_postseason: isPostseason ? 1 : 0,
     result: result || null,
+    team_score: teamScore ?? null,
+    opponent_score: opponentScore ?? null,
+    note: normalizedNote,
     created_at: now,
   };
 };
@@ -334,6 +356,9 @@ export const updateGame = async (
     'result',
     'game_date',
     'is_postseason',
+    'team_score',
+    'opponent_score',
+    'note',
   ];
   const setClauses: string[] = [];
   const values: (string | number | null)[] = [];

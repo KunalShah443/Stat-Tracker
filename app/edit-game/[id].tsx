@@ -76,6 +76,9 @@ export default function EditGameScreen() {
           week: loadedGame.week ?? undefined,
           isPostseason: loadedGame.is_postseason === 1,
           result: normalizeResult(loadedGame.result),
+          teamScore: loadedGame.team_score ?? undefined,
+          opponentScore: loadedGame.opponent_score ?? undefined,
+          note: loadedGame.note ?? '',
           stats: statMap,
         });
       } catch (error) {
@@ -105,6 +108,9 @@ export default function EditGameScreen() {
         week: formData.week ?? null,
         is_postseason: formData.isPostseason ? 1 : 0,
         result: formData.result ?? null,
+        team_score: formData.teamScore ?? null,
+        opponent_score: formData.opponentScore ?? null,
+        note: formData.note.trim() ? formData.note.trim() : null,
       });
 
       for (const [key, value] of Object.entries(formData.stats)) {

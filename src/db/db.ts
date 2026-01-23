@@ -42,6 +42,14 @@ async function migrateDb(database: SQLiteDatabase, fromVersion: number) {
     `);
     version = 3;
   }
+
+  if (version < 4) {
+    // v4 adds optional score + note fields to game logs.
+    await database.execAsync('ALTER TABLE games ADD COLUMN team_score INTEGER');
+    await database.execAsync('ALTER TABLE games ADD COLUMN opponent_score INTEGER');
+    await database.execAsync('ALTER TABLE games ADD COLUMN note TEXT');
+    version = 4;
+  }
 }
 
 /**
