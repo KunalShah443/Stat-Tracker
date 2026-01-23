@@ -17,6 +17,8 @@ interface QBStatFormProps {
   onFormChange: (data: GameFormData) => void;
   onSubmit: () => void;
   isLoading?: boolean;
+  submitLabel?: string;
+  submittingLabel?: string;
 }
 
 export const QBStatForm: React.FC<QBStatFormProps> = ({
@@ -24,6 +26,8 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
   onFormChange,
   onSubmit,
   isLoading = false,
+  submitLabel = 'Save Game',
+  submittingLabel = 'Saving...',
 }) => {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
@@ -290,7 +294,7 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
         disabled={isLoading}
       >
         <Text style={styles.submitButtonText}>
-          {isLoading ? 'Saving...' : 'Save Game'}
+          {isLoading ? submittingLabel : submitLabel}
         </Text>
       </Pressable>
 

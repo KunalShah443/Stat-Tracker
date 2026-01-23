@@ -64,6 +64,7 @@ function RootLayoutNav() {
         <Stack.Screen name="new-player" options={{ headerShown: false }} />
         <Stack.Screen name="continue-player" options={{ headerShown: false }} />
         <Stack.Screen name="game-log/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="edit-game/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>

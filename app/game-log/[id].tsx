@@ -9,8 +9,9 @@ import {
   QB_STATS,
   QBStatKey,
 } from '@/src/types/stats';
+import { useFocusEffect } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View as RNView } from 'react-native';
 
 type StatMap = Record<QBStatKey, number>;
@@ -43,27 +44,30 @@ export default function GameLogDetailScreen() {
 
   const gameId = Array.isArray(id) ? id[0] : id;
 
-  useEffect(() => {
-    const load = async () => {
-      if (!gameId) {
-        setIsLoading(false);
-        return;
-      }
+  useFocusEffect(
+    useCallback(() => {
+      const load = async () => {
+        if (!gameId) {
+          setIsLoading(false);
+          return;
+        }
 
-      try {
-        const loadedGame = await getGame(gameId);
-        const stats = await getGameStats(gameId);
-        setGame(loadedGame);
-        setStatMap(buildStatMap(stats));
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+        try {
+          setIsLoading(true);
+          const loadedGame = await getGame(gameId);
+          const stats = await getGameStats(gameId);
+          setGame(loadedGame);
+          setStatMap(buildStatMap(stats));
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-    void load();
-  }, [gameId]);
+      void load();
+    }, [gameId])
+  );
 
   const weekLabel = useMemo(() => {
     if (!game) return null;
@@ -118,7 +122,21 @@ export default function GameLogDetailScreen() {
               <Text style={[styles.headerSubtitle, { color: theme.muted }]}>{weekLabel}</Text>
             )}
           </View>
-          <HomeButton color={tintColor} />
+          <RNView style={styles.headerActions}>
+            <Pressable
+              onPress={() =>
+                router.push({ pathname: '/edit-game/[id]', params: { id: game.id } })
+              }
+              style={({ pressed }) => [
+                styles.editButton,
+                { backgroundColor: theme.surface2, borderColor: theme.accent2 },
+                pressed && styles.editButtonPressed,
+              ]}
+            >
+              <Text style={[styles.editButtonText, { color: theme.accent2 }]}>Edit</Text>
+            </Pressable>
+            <HomeButton color={tintColor} />
+          </RNView>
         </View>
         <View style={[styles.headerRule, { backgroundColor: theme.tintSoft }]} />
       </View>
@@ -185,6 +203,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   headerTitle: {
     fontSize: 24,
     fontFamily: 'SpaceMono',
@@ -199,6 +222,22 @@ const styles = StyleSheet.create({
     width: 56,
     borderRadius: 2,
     marginTop: 8,
+  },
+  editButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  editButtonPressed: {
+    transform: [{ translateY: 1 }],
+    opacity: 0.9,
+  },
+  editButtonText: {
+    fontSize: 12,
+    fontFamily: 'SpaceMono',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
   },
   summaryCard: {
     marginTop: 16,
