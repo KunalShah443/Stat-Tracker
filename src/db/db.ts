@@ -50,6 +50,14 @@ async function migrateDb(database: SQLiteDatabase, fromVersion: number) {
     await database.execAsync('ALTER TABLE games ADD COLUMN note TEXT');
     version = 4;
   }
+
+  if (version < 5) {
+    // v5 adds a home/away flag for game logs.
+    await database.execAsync(
+      'ALTER TABLE games ADD COLUMN is_home INTEGER NOT NULL DEFAULT 1'
+    );
+    version = 5;
+  }
 }
 
 /**

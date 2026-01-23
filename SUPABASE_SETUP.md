@@ -47,6 +47,7 @@ create table if not exists public.games (
   opponent text not null,
   week integer,
   is_postseason integer not null default 0,
+  is_home integer not null default 1,
   result text,
   team_score integer,
   opponent_score integer,
@@ -76,6 +77,13 @@ create index if not exists idx_game_stats_game_id on public.game_stats(game_id);
 create index if not exists idx_game_stats_stat_key on public.game_stats(stat_key);
 create index if not exists idx_achievements_profile_id on public.achievements(profile_id);
 create index if not exists idx_achievements_profile_type_year on public.achievements(profile_id, type, year);
+```
+
+If you already created the tables, add the new `is_home` column with:
+
+```sql
+alter table public.games
+add column if not exists is_home integer not null default 1;
 ```
 
 ## 3) Lock down access (recommended)
@@ -118,4 +126,3 @@ On Vercel, add the same variables in **Project Settings -> Environment Variables
 - Open the site
 - Sign in on the home screen
 - Create/continue player and add game logs
-

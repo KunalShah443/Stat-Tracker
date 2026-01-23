@@ -27,6 +27,7 @@ export interface GameFormData {
   gameDate: string;
   week?: number;
   isPostseason: boolean;
+  isHome: boolean;
   result?: 'W' | 'L' | 'T';
   teamScore?: number;
   opponentScore?: number;
@@ -39,6 +40,7 @@ export const DEFAULT_GAME_FORM_DATA: GameFormData = {
   gameDate: new Date().toISOString().split('T')[0],
   week: undefined,
   isPostseason: false,
+  isHome: true,
   result: undefined,
   teamScore: undefined,
   opponentScore: undefined,

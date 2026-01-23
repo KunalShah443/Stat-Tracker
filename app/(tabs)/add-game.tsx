@@ -64,7 +64,8 @@ export default function AddGameScreen() {
         formData.result,
         formData.teamScore,
         formData.opponentScore,
-        formData.note
+        formData.note,
+        formData.isHome
       );
 
       // Set all stats

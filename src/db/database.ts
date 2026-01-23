@@ -43,6 +43,7 @@ export interface Game {
   opponent: string;
   week: number | null;
   is_postseason: number;
+  is_home: number;
   result: string | null;
   team_score: number | null;
   opponent_score: number | null;
@@ -273,15 +274,17 @@ export const createGame = async (
   result?: string,
   teamScore?: number,
   opponentScore?: number,
-  note?: string
+  note?: string,
+  isHome?: boolean
 ): Promise<Game> => {
   const database = await getDatabase();
   const id = `game_${Date.now()}`;
   const now = new Date().toISOString();
   const normalizedNote = note?.trim() ? note.trim() : null;
+  const homeFlag = isHome === undefined ? 1 : isHome ? 1 : 0;
 
   await database.runAsync(
-    'INSERT INTO games (id, season_id, game_date, opponent, week, is_postseason, result, team_score, opponent_score, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO games (id, season_id, game_date, opponent, week, is_postseason, is_home, result, team_score, opponent_score, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [
       id,
       seasonId,
@@ -289,6 +292,7 @@ export const createGame = async (
       opponent,
       week || null,
       isPostseason ? 1 : 0,
+      homeFlag,
       result || null,
       teamScore ?? null,
       opponentScore ?? null,
@@ -304,6 +308,7 @@ export const createGame = async (
     opponent,
     week: week || null,
     is_postseason: isPostseason ? 1 : 0,
+    is_home: homeFlag,
     result: result || null,
     team_score: teamScore ?? null,
     opponent_score: opponentScore ?? null,
@@ -356,6 +361,7 @@ export const updateGame = async (
     'result',
     'game_date',
     'is_postseason',
+    'is_home',
     'team_score',
     'opponent_score',
     'note',
@@ -366,7 +372,7 @@ export const updateGame = async (
   Object.entries(updates).forEach(([key, value]) => {
     if (allowedFields.includes(key) && value !== undefined) {
       setClauses.push(`${key} = ?`);
-      if (key === 'is_postseason' && typeof value === 'boolean') {
+      if ((key === 'is_postseason' || key === 'is_home') && typeof value === 'boolean') {
         values.push(value ? 1 : 0);
       } else {
         values.push((value as string | number | null) ?? null);

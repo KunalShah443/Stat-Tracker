@@ -74,6 +74,10 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
   const inputText = theme.text;
   const placeholderText = theme.muted;
   const selectedPostseasonLabel = getPostseasonRoundLabel(formData.week ?? null);
+  const opponentLabel = formData.opponent.trim() || 'Opponent';
+  const matchupPreview = formData.isHome
+    ? `${opponentLabel} @ Your Team`
+    : `Your Team @ ${opponentLabel}`;
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -254,6 +258,28 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
               </Text>
             </Pressable>
           </View>
+        </View>
+
+        <View style={styles.formGroup}>
+          <View style={styles.checkboxRow}>
+            <Pressable
+              onPress={() => updateBasicField('isHome', !formData.isHome)}
+              style={styles.checkbox}
+            >
+              <View
+                style={[
+                  styles.checkboxInner,
+                  { borderColor: inputBorder },
+                  formData.isHome && {
+                    backgroundColor: theme.tint,
+                    borderColor: theme.tint,
+                  },
+                ]}
+              />
+              <Text style={[styles.checkboxLabel, { color: theme.text }]}>Home Game</Text>
+            </Pressable>
+          </View>
+          <Text style={[styles.helperText, { color: theme.muted }]}>{matchupPreview}</Text>
         </View>
 
         <View style={styles.row}>
@@ -483,6 +509,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'SpaceMono',
     letterSpacing: 0.2,
+  },
+  helperText: {
+    marginTop: 6,
+    fontSize: 12,
   },
   submitButton: {
     paddingVertical: 12,

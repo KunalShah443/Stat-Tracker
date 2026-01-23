@@ -28,6 +28,7 @@ interface GameWithStats {
   opponent: string;
   week: number | null;
   isPostseason: number;
+  isHome: number;
   result: string | null;
   teamScore: number | null;
   opponentScore: number | null;
@@ -101,6 +102,7 @@ export default function GameLogsScreen() {
             opponent: game.opponent,
             week: game.week,
             isPostseason: game.is_postseason,
+            isHome: game.is_home,
             result: game.result,
             teamScore: game.team_score,
             opponentScore: game.opponent_score,
@@ -137,6 +139,9 @@ export default function GameLogsScreen() {
       item.teamScore === null && item.opponentScore === null
         ? null
         : `Score ${item.teamScore ?? '-'}-${item.opponentScore ?? '-'}`;
+    const teamName = selectedSeason?.team_name ?? 'Your Team';
+    const matchupLabel =
+      item.isHome === 1 ? `${item.opponent} @ ${teamName}` : `${teamName} @ ${item.opponent}`;
 
     return (
       <Pressable
@@ -167,7 +172,7 @@ export default function GameLogsScreen() {
         </View>
 
         <View style={styles.gameInfo}>
-          <Text style={styles.opponent}>{item.opponent}</Text>
+          <Text style={styles.opponent}>{matchupLabel}</Text>
           {weekLabel && (
             <Text style={[styles.dateText, { color: theme.muted }]}>{weekLabel}</Text>
           )}

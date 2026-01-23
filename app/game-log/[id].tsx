@@ -154,6 +154,12 @@ export default function GameLogDetailScreen() {
           <Text style={[styles.summaryLabel, { color: theme.muted }]}>Result</Text>
           <Text style={[styles.summaryValue, { color: theme.text }]}>{game.result || '-'}</Text>
         </View>
+        <View style={styles.summaryRow}>
+          <Text style={[styles.summaryLabel, { color: theme.muted }]}>Venue</Text>
+          <Text style={[styles.summaryValue, { color: theme.text }]}>
+            {game.is_home === 1 ? 'Home' : 'Away'}
+          </Text>
+        </View>
         {scoreLabel && (
           <View style={styles.summaryRow}>
             <Text style={[styles.summaryLabel, { color: theme.muted }]}>Score</Text>
