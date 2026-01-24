@@ -48,6 +48,7 @@ create table if not exists public.games (
   week integer,
   is_postseason integer not null default 0,
   is_home integer not null default 1,
+  is_starter integer not null default 1,
   result text,
   team_score integer,
   opponent_score integer,
@@ -75,6 +76,7 @@ create table if not exists public.achievements (
 alter table public.games
   add column if not exists is_postseason integer not null default 0,
   add column if not exists is_home integer not null default 1,
+  add column if not exists is_starter integer not null default 1,
   add column if not exists team_score integer,
   add column if not exists opponent_score integer,
   add column if not exists note text;

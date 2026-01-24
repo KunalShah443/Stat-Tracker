@@ -315,7 +315,8 @@ export const createGame = async (
   teamScore?: number,
   opponentScore?: number,
   note?: string,
-  isHome?: boolean
+  isHome?: boolean,
+  isStarter?: boolean
 ): Promise<Game> => {
   if (!isSupabaseConfigured()) {
     return localDb.createGame(
@@ -328,7 +329,8 @@ export const createGame = async (
       teamScore,
       opponentScore,
       note,
-      isHome
+      isHome,
+      isStarter
     );
   }
 
@@ -341,6 +343,7 @@ export const createGame = async (
   const trimmedOpponent = opponent.trim();
   const trimmedNote = note?.trim() ? note.trim() : null;
   const homeFlag = isHome === undefined ? 1 : isHome ? 1 : 0;
+  const starterFlag = isStarter === undefined ? 1 : isStarter ? 1 : 0;
 
   const { data, error } = await supabase
     .from('games')
@@ -352,6 +355,7 @@ export const createGame = async (
       week: week ?? null,
       is_postseason: isPostseason ? 1 : 0,
       is_home: homeFlag,
+      is_starter: starterFlag,
       result: result ?? null,
       team_score: teamScore ?? null,
       opponent_score: opponentScore ?? null,
@@ -439,6 +443,7 @@ export const updateGame = async (
     'game_date',
     'is_postseason',
     'is_home',
+    'is_starter',
     'team_score',
     'opponent_score',
     'note',
@@ -467,6 +472,10 @@ export const updateGame = async (
 
   if (typeof payload.is_home === 'boolean') {
     payload.is_home = payload.is_home ? 1 : 0;
+  }
+
+  if (typeof payload.is_starter === 'boolean') {
+    payload.is_starter = payload.is_starter ? 1 : 0;
   }
 
   const { error } = await supabase.from('games').update(payload).eq('id', gameId);

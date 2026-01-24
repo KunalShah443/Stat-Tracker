@@ -101,6 +101,13 @@ export default function CareerStatsScreen() {
           <View style={styles.statsGrid}>
             <StatTile
               style={styles.statTile}
+              label="Starter Record"
+              value={stats.starter_record.regular_season.formatted}
+              subLabel="W-D-L"
+              stripeColor={theme.tint}
+            />
+            <StatTile
+              style={styles.statTile}
               label="Pass Yards"
               value={stats.regular_season.pass_yds.total.toFixed(1)}
               subLabel={`${stats.regular_season.pass_yds.average.toFixed(1)}/game`}
@@ -169,6 +176,13 @@ export default function CareerStatsScreen() {
             </Text>
           ) : null}
           <View style={styles.statsGrid}>
+              <StatTile
+                style={styles.statTile}
+                label="Starter Record"
+                value={stats.starter_record.postseason.formatted}
+                subLabel="W-L"
+                stripeColor={theme.tint}
+              />
               <StatTile
                 style={styles.statTile}
                 label="Pass Yards"

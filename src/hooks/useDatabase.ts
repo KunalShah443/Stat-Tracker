@@ -162,7 +162,8 @@ export const useGame = () => {
       teamScore?: number,
       opponentScore?: number,
       note?: string,
-      isHome?: boolean
+      isHome?: boolean,
+      isStarter?: boolean
     ) => {
       const g = await createGame(
         seasonId,
@@ -174,7 +175,8 @@ export const useGame = () => {
         teamScore,
         opponentScore,
         note,
-        isHome
+        isHome,
+        isStarter
       );
       setGame(g);
       setGameStats([]);

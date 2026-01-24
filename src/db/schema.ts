@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 5;
+export const SCHEMA_VERSION = 6;
 
 /**
  * Notes:
@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS games (
   week INTEGER,                 -- optional
   is_postseason INTEGER NOT NULL DEFAULT 0, -- 0/1
   is_home INTEGER NOT NULL DEFAULT 1, -- 0/1
+  is_starter INTEGER NOT NULL DEFAULT 1, -- 0/1 (did you start this game?)
   result TEXT,                  -- "W" | "L" | "T" | null
   team_score INTEGER,           -- optional (your team)
   opponent_score INTEGER,       -- optional

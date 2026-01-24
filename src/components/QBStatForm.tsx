@@ -282,6 +282,29 @@ export const QBStatForm: React.FC<QBStatFormProps> = ({
           <Text style={[styles.helperText, { color: theme.muted }]}>{matchupPreview}</Text>
         </View>
 
+        <View style={styles.formGroup}>
+          <View style={styles.checkboxRow}>
+            <Pressable
+              onPress={() => updateBasicField('isStarter', !formData.isStarter)}
+              style={styles.checkbox}
+            >
+              <View
+                style={[
+                  styles.checkboxInner,
+                  { borderColor: inputBorder },
+                  formData.isStarter && {
+                    backgroundColor: theme.tint,
+                    borderColor: theme.tint,
+                  },
+                ]}
+              />
+              <Text style={[styles.checkboxLabel, { color: theme.text }]}>
+                Started Game
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
         <View style={styles.row}>
           <View style={[styles.formGroup, { flex: 1 }]}>
             <Text style={[styles.label, { color: theme.muted }]}>Your Score (Optional)</Text>

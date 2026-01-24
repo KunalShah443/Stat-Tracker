@@ -5,6 +5,7 @@ import {
     getSeason,
     getSeasonsByProfile
 } from './supabaseDatabase';
+import type { Game } from './database';
 
 export interface StatAggregate {
   total: number;
@@ -24,18 +25,33 @@ export interface QBStats {
   rush_td: StatAggregate;
 }
 
+export interface StarterRecord {
+  wins: number;
+  losses: number;
+  ties: number;
+  formatted: string; // Regular: W-D-L, Postseason: W-L
+}
+
 export interface SeasonStats {
   season_year: number;
   team_name: string;
   regular_season: QBStats;
   postseason: QBStats;
   combined: QBStats;
+  starter_record: {
+    regular_season: StarterRecord;
+    postseason: StarterRecord;
+  };
 }
 
 export interface CareerStats {
   regular_season: QBStats;
   postseason: QBStats;
   combined: QBStats;
+  starter_record: {
+    regular_season: StarterRecord;
+    postseason: StarterRecord;
+  };
 }
 
 const QB_STAT_KEYS = [
@@ -48,6 +64,54 @@ const QB_STAT_KEYS = [
   'rush_yds',
   'rush_td',
 ];
+
+const getGameOutcome = (game: Game): 'W' | 'L' | 'T' | null => {
+  const normalized = (game.result ?? '').toUpperCase();
+  if (normalized === 'W' || normalized === 'L' || normalized === 'T') return normalized;
+
+  if (typeof game.team_score === 'number' && typeof game.opponent_score === 'number') {
+    if (game.team_score > game.opponent_score) return 'W';
+    if (game.team_score < game.opponent_score) return 'L';
+    return 'T';
+  }
+
+  return null;
+};
+
+const getStarterRecord = (
+  games: Game[],
+  format: 'regular' | 'postseason'
+): StarterRecord => {
+  const record = { wins: 0, losses: 0, ties: 0 };
+
+  games.forEach((game) => {
+    const started = (((game as any).is_starter ?? 1) as number) === 1;
+    if (!started) return;
+
+    const outcome = getGameOutcome(game);
+    if (!outcome) return;
+
+    if (outcome === 'W') record.wins += 1;
+    else if (outcome === 'L') record.losses += 1;
+    else record.ties += 1;
+  });
+
+  if (format === 'postseason') {
+    return {
+      wins: record.wins,
+      losses: record.losses,
+      ties: 0,
+      formatted: `${record.wins}-${record.losses}`,
+    };
+  }
+
+  return {
+    wins: record.wins,
+    losses: record.losses,
+    ties: record.ties,
+    formatted: `${record.wins}-${record.ties}-${record.losses}`,
+  };
+};
 
 export const aggregateStats = async (gameIds: string[]): Promise<QBStats> => {
   if (gameIds.length === 0) {
@@ -121,6 +185,10 @@ export const getSeasonStats = async (seasonId: string): Promise<SeasonStats> => 
     regular_season: await aggregateStats(regularSeasonGames.map((g) => g.id)),
     postseason: await aggregateStats(postseasonGames.map((g) => g.id)),
     combined: await aggregateStats(allGames.map((g) => g.id)),
+    starter_record: {
+      regular_season: getStarterRecord(regularSeasonGames, 'regular'),
+      postseason: getStarterRecord(postseasonGames, 'postseason'),
+    },
   };
 };
 
@@ -143,6 +211,16 @@ export const getCareerStats = async (profileId: string): Promise<CareerStats> =>
     regular_season: await aggregateStats(regularSeasonGameIds),
     postseason: await aggregateStats(postseasonGameIds),
     combined: await aggregateStats(allGameIds),
+    starter_record: {
+      regular_season: getStarterRecord(
+        allGames.filter((g) => g.is_postseason === 0),
+        'regular'
+      ),
+      postseason: getStarterRecord(
+        allGames.filter((g) => g.is_postseason === 1),
+        'postseason'
+      ),
+    },
   };
 };
 

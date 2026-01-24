@@ -58,6 +58,14 @@ async function migrateDb(database: SQLiteDatabase, fromVersion: number) {
     );
     version = 5;
   }
+
+  if (version < 6) {
+    // v6 adds a starter flag so we can compute record "as starter".
+    await database.execAsync(
+      'ALTER TABLE games ADD COLUMN is_starter INTEGER NOT NULL DEFAULT 1'
+    );
+    version = 6;
+  }
 }
 
 /**

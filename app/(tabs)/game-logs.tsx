@@ -29,6 +29,7 @@ interface GameWithStats {
   week: number | null;
   isPostseason: number;
   isHome: number;
+  isStarter: number;
   result: string | null;
   teamScore: number | null;
   opponentScore: number | null;
@@ -103,6 +104,7 @@ export default function GameLogsScreen() {
             week: game.week,
             isPostseason: game.is_postseason,
             isHome: game.is_home,
+            isStarter: game.is_starter ?? 1,
             result: game.result,
             teamScore: game.team_score,
             opponentScore: game.opponent_score,
@@ -181,6 +183,9 @@ export default function GameLogsScreen() {
           )}
           {!scoreLabel && item.hasNote && (
             <Text style={[styles.dateText, { color: theme.muted }]}>Note added</Text>
+          )}
+          {item.isStarter === 0 && (
+            <Text style={[styles.dateText, { color: theme.warning }]}>Did not start</Text>
           )}
         </View>
 

@@ -28,6 +28,7 @@ export interface GameFormData {
   week?: number;
   isPostseason: boolean;
   isHome: boolean;
+  isStarter: boolean;
   result?: 'W' | 'L' | 'T';
   teamScore?: number;
   opponentScore?: number;
@@ -41,6 +42,7 @@ export const DEFAULT_GAME_FORM_DATA: GameFormData = {
   week: undefined,
   isPostseason: false,
   isHome: true,
+  isStarter: true,
   result: undefined,
   teamScore: undefined,
   opponentScore: undefined,
